@@ -40,11 +40,43 @@ async function loadGuildMembers(){
         // Only Elite players appear in the GL Player Pool
         playerPool = guildMembers.filter(player => player.elite);
 
-        renderPlayerPool();
+        try {
 
-        renderRoster();
+    renderPlayerPool();
 
-    }
+} catch (error) {
+
+    console.error(
+        "Player Pool render failed:",
+        error
+    );
+}
+
+
+try {
+
+    renderRoster();
+
+} catch (error) {
+
+    console.error(
+        "Guild Roster render failed:",
+        error
+    );
+}
+
+
+try {
+
+    renderSubLeague();
+
+} catch (error) {
+
+    console.error(
+        "Sub League render failed:",
+        error
+    );
+}
 
     catch(error){
 
