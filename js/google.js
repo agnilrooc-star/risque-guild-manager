@@ -2,89 +2,185 @@
 // GOOGLE SHEETS CONFIG
 // =====================================
 
-const API_URL = "https://script.google.com/macros/s/AKfycbycY-OfC9-NGLliPuXG-JxN2TwnGEcGPjAsyVHWoUWQHptNE2Q12xhuRZceIuO9XIbqzw/exec";
+const API_URL =
+    "https://script.google.com/macros/s/AKfycbycY-OfC9-NGLliPuXG-JxN2TwnGEcGPjAsyVHWoUWQHptNE2Q12xhuRZceIuO9XIbqzw/exec";
 
 let guildMembers = [];
 let playerPool = [];
+
+
+// =====================================
+// CHECK ELITE STATUS
+// =====================================
+
+function isElitePlayer(value) {
+
+    if (value === true) {
+        return true;
+    }
+
+    const normalizedValue =
+        String(value || "")
+            .trim()
+            .toLowerCase();
+
+    return (
+        normalizedValue === "true" ||
+        normalizedValue === "yes" ||
+        normalizedValue === "1" ||
+        normalizedValue === "elite"
+    );
+}
+
 
 // =====================================
 // LOAD DATA FROM GOOGLE SHEETS
 // =====================================
 
-async function loadGuildMembers(){
+async function loadGuildMembers() {
 
-    try{
+    try {
 
-        const response = await fetch(API_URL);
+        const response =
+            await fetch(API_URL);
 
-        const data = await response.json();
+        if (!response.ok) {
 
-        guildMembers = data.map(player => ({
+            throw new Error(
+                `Google Sheets request failed: ${response.status}`
+            );
+        }
 
-            ign: player.ign || "",
+        const data =
+            await response.json();
 
-            class: player.class || "",
+        if (!Array.isArray(data)) {
 
-            role: player.role || "",
+            throw new Error(
+                "Google Sheets did not return an array."
+            );
+        }
 
-            gear: player.gear || player["Gear Rating"] || "",
+        guildMembers = data.map((player) => ({
+
+            ign:
+                player.ign ||
+                player.IGN ||
+                "",
+
+            class:
+                player.class ||
+                player.Class ||
+                "",
+
+            role:
+                player.role ||
+                player.Role ||
+                "",
+
+            gear:
+                player.gear ||
+                player["Gear Rating"] ||
+                player["Gear Score"] ||
+                "",
 
             elite:
-                player.elite === true ||
-                player.elite === "TRUE" ||
-                player.elite === "true" ||
-                player.elite === "Yes"
-
+                isElitePlayer(
+                    player.elite ??
+                    player.Elite
+                )
         }));
 
-        // Only Elite players appear in the GL Player Pool
-        playerPool = guildMembers.filter(player => player.elite);
+
+        // Elite members only
+        playerPool =
+            guildMembers.filter(
+                (player) => player.elite
+            );
+
+
+        // Render Guild League Player Pool
 
         try {
 
-    renderPlayerPool();
+            if (
+                typeof renderPlayerPool ===
+                "function"
+            ) {
+                renderPlayerPool();
+            }
 
-} catch (error) {
+        } catch (error) {
 
-    console.error(
-        "Player Pool render failed:",
-        error
-    );
-}
-
-
-try {
-
-    renderRoster();
-
-} catch (error) {
-
-    console.error(
-        "Guild Roster render failed:",
-        error
-    );
-}
+            console.error(
+                "Player Pool render failed:",
+                error
+            );
+        }
 
 
-try {
+        // Render complete Guild Roster
 
-    renderSubLeague();
+        try {
 
-} catch (error) {
+            if (
+                typeof renderRoster ===
+                "function"
+            ) {
+                renderRoster();
+            }
 
-    console.error(
-        "Sub League render failed:",
-        error
-    );
-}
+        } catch (error) {
 
-    catch(error){
+            console.error(
+                "Guild Roster render failed:",
+                error
+            );
+        }
 
-        console.error("Google Sheets Error:", error);
 
+        // Render non-Elite Sub League
+
+        try {
+
+            if (
+                typeof renderSubLeague ===
+                "function"
+            ) {
+                renderSubLeague();
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Sub League render failed:",
+                error
+            );
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Google Sheets Error:",
+            error
+        );
+
+        const rosterTable =
+            document.getElementById(
+                "rosterTable"
+            );
+
+        if (rosterTable) {
+
+            rosterTable.innerHTML = `
+                <div class="empty-roster-message">
+                    Unable to load Guild Roster.
+                </div>
+            `;
+        }
     }
-
 }
+
 
 // =====================================
 // AUTO REFRESH
@@ -92,4 +188,7 @@ try {
 
 loadGuildMembers();
 
-setInterval(loadGuildMembers,5000);
+setInterval(
+    loadGuildMembers,
+    5000
+);
