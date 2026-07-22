@@ -1,9 +1,91 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-    <title>Risque Guild Manager</title>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Risque Guild Manager</title>
+
+<link rel="stylesheet" href="style.css">
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
 </head>
+
 <body>
-    <h1>Risque Guild Manager</h1>
+
+<header>
+
+<div class="logo">
+
+RISQUE GUILD MANAGER
+
+</div>
+
+<nav>
+
+<button class="tab active" id="plannerTab">
+
+Guild League Planner
+
+</button>
+
+<button class="tab" id="rosterTab">
+
+Guild Roster
+
+</button>
+
+</nav>
+
+</header>
+
+<div id="plannerPage">
+
+<aside class="playerPool">
+
+<h2>Player Pool</h2>
+
+<div id="playerPool">
+
+</div>
+
+</aside>
+
+<main class="planner">
+
+<div id="raidOne"></div>
+
+<div class="bottomRaids">
+
+<div id="raidTwo"></div>
+
+<div id="raidThree"></div>
+
+<div id="roaming"></div>
+
+</div>
+
+</main>
+
+</div>
+
+<div id="rosterPage" style="display:none;">
+
+<h2>Guild Roster</h2>
+
+<div id="rosterTable"></div>
+
+</div>
+
+<script src="js/google.js"></script>
+<script src="js/planner.js"></script>
+<script src="js/roster.js"></script>
+<script src="js/tabs.js"></script>
+<script src="js/app.js"></script>
+
 </body>
+
 </html>
