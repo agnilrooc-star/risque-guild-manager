@@ -1,9 +1,6 @@
-// =====================================
-// DRAG AND DROP RAID PLANNER
-// =====================================
 // =========================================
 // RISQUE RAID PLANNER
-// Creates raid boxes and enables drag/drop
+// Raid boxes + drag and drop + local saving
 // =========================================
 
 
@@ -16,7 +13,7 @@ function createRaidSection(containerId, raidTitle, partyCount) {
     const container = document.getElementById(containerId);
 
     if (!container) {
-        console.error(`Container not found: ${containerId}`);
+        console.error(`Raid container not found: ${containerId}`);
         return;
     }
 
@@ -29,7 +26,7 @@ function createRaidSection(containerId, raidTitle, partyCount) {
         partiesHTML += `
             <div class="party">
 
-                <h3 data-party-name="Party ${number}">
+                <h3 data-original-title="Party ${number}">
                     Party ${number} (0)
                 </h3>
 
@@ -62,28 +59,24 @@ function createRaidSection(containerId, raidTitle, partyCount) {
 
 function createAllRaidBoxes() {
 
-    // Raid 1 has 6 parties
     createRaidSection(
         "raidOne",
         "Raid 1",
         6
     );
 
-    // Raid 2 has 2 parties
     createRaidSection(
         "raidTwo",
         "Raid 2",
         2
     );
 
-    // Raid 3 has 2 parties
     createRaidSection(
         "raidThree",
         "Raid 3",
         2
     );
 
-    // Roaming has 2 parties
     createRaidSection(
         "roaming",
         "Roaming",
@@ -93,79 +86,217 @@ function createAllRaidBoxes() {
 
 
 // =========================================
-// UPDATE PARTY COUNTS
+// GET PLAYER NAME FROM CARD
+// =========================================
+
+function getCardPlayerName(card) {
+
+    if (!card) {
+        return "";
+    }
+
+    return (
+        card.dataset.ign ||
+        card.querySelector(".player-name")
+            ?.textContent
+            .trim() ||
+        ""
+    );
+}
+
+
+// =========================================
+// UPDATE COUNTS
 // =========================================
 
 function updatePlannerCounts() {
 
-    document.querySelectorAll(".party").forEach((party) => {
+    document
+        .querySelectorAll(".party")
+        .forEach((party) => {
 
-        const title = party.querySelector("h3");
-        const playerArea = party.querySelector(".partyPlayers");
+            const title =
+                party.querySelector("h3");
 
-        if (!title || !playerArea) {
-            return;
-        }
+            const playerArea =
+                party.querySelector(".partyPlayers");
 
-        const partyName =
-            title.dataset.partyName || "Party";
+            if (!title || !playerArea) {
+                return;
+            }
 
-        const playerCount =
-            playerArea.querySelectorAll(".player-card").length;
+            const originalTitle =
+                title.dataset.originalTitle ||
+                title.textContent
+                    .replace(/\s*\(\d+\)$/, "")
+                    .trim();
 
-        title.textContent =
-            `${partyName} (${playerCount})`;
-    });
+            title.dataset.originalTitle =
+                originalTitle;
+
+            const playerTotal =
+                playerArea.querySelectorAll(
+                    ".player-card"
+                ).length;
+
+            title.textContent =
+                `${originalTitle} (${playerTotal})`;
+        });
+
 
     const playerPool =
         document.getElementById("playerPool");
 
-    const playerCountElement =
+    const playerCount =
         document.getElementById("playerCount");
 
-    if (playerPool && playerCountElement) {
+    if (playerPool && playerCount) {
 
         const availablePlayers =
-            playerPool.querySelectorAll(".player-card").length;
+            playerPool.querySelectorAll(
+                ".player-card"
+            ).length;
 
-        playerCountElement.textContent =
+        playerCount.textContent =
             `${availablePlayers} Players`;
     }
 }
 
 
 // =========================================
-// SAVE RAID PLANNER
+// SAVE PLANNER LAYOUT
 // =========================================
 
 function savePlannerLayout() {
 
-    const savedPlanner = {};
+    const plannerData = {};
 
-    document.querySelectorAll(".partyPlayers").forEach((partyArea) => {
+    document
+        .querySelectorAll(".partyPlayers")
+        .forEach((partyContainer) => {
 
-        savedPlanner[partyArea.id] = [];
+            if (!partyContainer.id) {
+                return;
+            }
 
-        partyArea
-            .querySelectorAll(".player-card")
-            .forEach((card) => {
+            plannerData[partyContainer.id] = [];
 
-                const playerName =
-                    card.dataset.ign ||
-                    card.querySelector(".player-name")
-                        ?.textContent
-                        .trim();
+            partyContainer
+                .querySelectorAll(".player-card")
+                .forEach((card) => {
 
-                if (playerName) {
-                    savedPlanner[partyArea.id].push(playerName);
-                }
-            });
-    });
+                    const playerName =
+                        getCardPlayerName(card);
+
+                    if (playerName) {
+
+                        plannerData[
+                            partyContainer.id
+                        ].push(playerName);
+                    }
+                });
+        });
 
     localStorage.setItem(
         "risqueRaidPlanner",
-        JSON.stringify(savedPlanner)
+        JSON.stringify(plannerData)
     );
+}
+
+
+// =========================================
+// RESTORE SAVED PLANNER
+// =========================================
+
+function restorePlannerLayout() {
+
+    const savedData =
+        localStorage.getItem(
+            "risqueRaidPlanner"
+        );
+
+    if (!savedData) {
+        updatePlannerCounts();
+        return;
+    }
+
+    let plannerData;
+
+    try {
+
+        plannerData =
+            JSON.parse(savedData);
+
+    } catch (error) {
+
+        console.error(
+            "Unable to read saved planner:",
+            error
+        );
+
+        localStorage.removeItem(
+            "risqueRaidPlanner"
+        );
+
+        return;
+    }
+
+    Object.entries(plannerData)
+        .forEach(
+            ([partyId, playerNames]) => {
+
+                const partyContainer =
+                    document.getElementById(
+                        partyId
+                    );
+
+                if (!partyContainer) {
+                    return;
+                }
+
+                playerNames.forEach(
+                    (playerName) => {
+
+                        const playerCards =
+                            document.querySelectorAll(
+                                "#playerPool .player-card"
+                            );
+
+                        const matchingCard =
+                            Array.from(
+                                playerCards
+                            ).find((card) => {
+
+                                return (
+                                    getCardPlayerName(card) ===
+                                    playerName
+                                );
+                            });
+
+                        if (matchingCard) {
+
+                            partyContainer.appendChild(
+                                matchingCard
+                            );
+                        }
+                    }
+                );
+            }
+        );
+
+    updatePlannerCounts();
+}
+
+
+// =========================================
+// DRAG EVENT
+// =========================================
+
+function handlePlannerChange() {
+
+    updatePlannerCounts();
+
+    savePlannerLayout();
 }
 
 
@@ -177,22 +308,30 @@ function initializeDragAndDrop() {
 
     if (typeof Sortable === "undefined") {
 
-        console.error("SortableJS did not load.");
+        console.error(
+            "SortableJS did not load."
+        );
 
         return;
     }
 
     const playerPool =
-        document.getElementById("playerPool");
+        document.getElementById(
+            "playerPool"
+        );
 
     if (!playerPool) {
 
-        console.error("Player Pool was not found.");
+        console.error(
+            "Player Pool was not found."
+        );
 
         return;
     }
 
-    // Prevent duplicate Sortable initialization
+
+    // Player Pool drag-and-drop
+
     if (!playerPool.dataset.sortableReady) {
 
         new Sortable(playerPool, {
@@ -211,57 +350,123 @@ function initializeDragAndDrop() {
 
             dragClass: "sortable-drag",
 
-            onEnd: function () {
-
-                updatePlannerCounts();
-
-                savePlannerLayout();
-            }
+            onEnd: handlePlannerChange
         });
 
-        playerPool.dataset.sortableReady = "true";
+        playerPool.dataset.sortableReady =
+            "true";
     }
 
 
+    // Raid party drag-and-drop
+
     document
         .querySelectorAll(".partyPlayers")
-        .forEach((partyArea) => {
+        .forEach((partyContainer) => {
 
-            if (partyArea.dataset.sortableReady) {
+            if (
+                partyContainer.dataset
+                    .sortableReady
+            ) {
                 return;
             }
 
-            new Sortable(partyArea, {
+            new Sortable(
+                partyContainer,
+                {
 
-                group: {
-                    name: "guildPlayers",
-                    pull: true,
-                    put: true
-                },
+                    group: {
+                        name: "guildPlayers",
+                        pull: true,
+                        put: true
+                    },
 
-                animation: 180,
+                    animation: 180,
 
-                ghostClass: "sortable-ghost",
+                    ghostClass:
+                        "sortable-ghost",
 
-                chosenClass: "sortable-chosen",
+                    chosenClass:
+                        "sortable-chosen",
 
-                dragClass: "sortable-drag",
+                    dragClass:
+                        "sortable-drag",
 
-                onEnd: function () {
-
-                    updatePlannerCounts();
-
-                    savePlannerLayout();
+                    onEnd:
+                        handlePlannerChange
                 }
-            });
+            );
 
-            partyArea.dataset.sortableReady = "true";
+            partyContainer.dataset
+                .sortableReady = "true";
         });
 }
 
 
 // =========================================
-// START RAID PLANNER
+// WATCH FOR GOOGLE SHEETS PLAYERS
+// =========================================
+
+function watchPlayerPool() {
+
+    const playerPool =
+        document.getElementById(
+            "playerPool"
+        );
+
+    if (!playerPool) {
+        return;
+    }
+
+    const observer =
+        new MutationObserver(() => {
+
+            restorePlannerLayout();
+
+            updatePlannerCounts();
+        });
+
+    observer.observe(playerPool, {
+
+        childList: true
+    });
+}
+
+
+// =========================================
+// CLEAR RAID PLANNER
+// =========================================
+
+function clearRaidPlanner() {
+
+    const playerPool =
+        document.getElementById(
+            "playerPool"
+        );
+
+    if (!playerPool) {
+        return;
+    }
+
+    document
+        .querySelectorAll(
+            ".partyPlayers .player-card"
+        )
+        .forEach((card) => {
+
+            playerPool.appendChild(card);
+        });
+
+    localStorage.removeItem(
+        "risqueRaidPlanner"
+    );
+
+    updatePlannerCounts();
+}
+
+
+// =========================================
+// START PLANNER
 // =========================================
 
 function startRaidPlanner() {
@@ -270,265 +475,13 @@ function startRaidPlanner() {
 
     initializeDragAndDrop();
 
-    updatePlannerCounts();
-}
-
-
-if (document.readyState === "loading") {
-
-    document.addEventListener(
-        "DOMContentLoaded",
-        startRaidPlanner
-    );
-
-} else {
-
-    startRaidPlanner();
-}
-function initializeRaidPlanner() {
-
-    const playerPoolElement = document.getElementById("playerPool");
-
-    if (!playerPoolElement) {
-        console.error("Player Pool container was not found.");
-        return;
-    }
-
-    if (typeof Sortable === "undefined") {
-        console.error("SortableJS did not load.");
-        return;
-    }
-
-    // Player Pool
-    new Sortable(playerPoolElement, {
-        group: {
-            name: "guildPlayers",
-            pull: true,
-            put: true
-        },
-
-        animation: 180,
-        ghostClass: "sortable-ghost",
-        chosenClass: "sortable-chosen",
-        dragClass: "sortable-drag",
-
-        onAdd: updatePlannerCounts,
-        onRemove: updatePlannerCounts,
-        onSort: updatePlannerCounts
-    });
-
-    // All raid party containers
-    const partyContainers = document.querySelectorAll(".partyPlayers");
-
-    partyContainers.forEach((partyContainer) => {
-
-        new Sortable(partyContainer, {
-            group: {
-                name: "guildPlayers",
-                pull: true,
-                put: true
-            },
-
-            animation: 180,
-            ghostClass: "sortable-ghost",
-            chosenClass: "sortable-chosen",
-            dragClass: "sortable-drag",
-
-            onAdd: function () {
-                updatePlannerCounts();
-                savePlannerLayout();
-            },
-
-            onRemove: function () {
-                updatePlannerCounts();
-                savePlannerLayout();
-            },
-
-            onSort: function () {
-                updatePlannerCounts();
-                savePlannerLayout();
-            }
-        });
-
-    });
+    watchPlayerPool();
 
     restorePlannerLayout();
-    updatePlannerCounts();
-}
-
-
-// =====================================
-// UPDATE PARTY PLAYER COUNTS
-// =====================================
-
-function updatePlannerCounts() {
-
-    const parties = document.querySelectorAll(".party");
-
-    parties.forEach((party) => {
-
-        const playerContainer = party.querySelector(".partyPlayers");
-        const partyTitle = party.querySelector("h3");
-
-        if (!playerContainer || !partyTitle) {
-            return;
-        }
-
-        const playerTotal =
-            playerContainer.querySelectorAll(".player-card").length;
-
-        const originalTitle =
-            partyTitle.dataset.originalTitle ||
-            partyTitle.textContent.replace(/\s*\(\d+\)$/, "").trim();
-
-        partyTitle.dataset.originalTitle = originalTitle;
-
-        partyTitle.textContent =
-            `${originalTitle} (${playerTotal})`;
-
-    });
-
-}
-
-
-// =====================================
-// SAVE PLANNER LAYOUT
-// =====================================
-
-function savePlannerLayout() {
-
-    const plannerData = {};
-
-    document.querySelectorAll(".partyPlayers").forEach((partyContainer) => {
-
-        if (!partyContainer.id) {
-            return;
-        }
-
-        plannerData[partyContainer.id] = [];
-
-        partyContainer
-            .querySelectorAll(".player-card")
-            .forEach((card) => {
-
-                const playerIGN =
-                    card.dataset.ign ||
-                    card.querySelector(".player-name")?.textContent.trim();
-
-                if (playerIGN) {
-                    plannerData[partyContainer.id].push(playerIGN);
-                }
-
-            });
-
-    });
-
-    localStorage.setItem(
-        "risqueRaidPlanner",
-        JSON.stringify(plannerData)
-    );
-
-}
-
-
-// =====================================
-// RESTORE PLANNER LAYOUT
-// =====================================
-
-function restorePlannerLayout() {
-
-    const savedData =
-        localStorage.getItem("risqueRaidPlanner");
-
-    if (!savedData) {
-        return;
-    }
-
-    let plannerData;
-
-    try {
-        plannerData = JSON.parse(savedData);
-    } catch (error) {
-        console.error("Unable to read saved planner:", error);
-        return;
-    }
-
-    Object.entries(plannerData).forEach(
-        ([partyContainerId, playerNames]) => {
-
-            const partyContainer =
-                document.getElementById(partyContainerId);
-
-            if (!partyContainer) {
-                return;
-            }
-
-            playerNames.forEach((playerName) => {
-
-                const playerCards =
-                    document.querySelectorAll("#playerPool .player-card");
-
-                const matchingCard =
-                    Array.from(playerCards).find((card) => {
-
-                        const cardIGN =
-                            card.dataset.ign ||
-                            card.querySelector(".player-name")
-                                ?.textContent.trim();
-
-                        return cardIGN === playerName;
-
-                    });
-
-                if (matchingCard) {
-                    partyContainer.appendChild(matchingCard);
-                }
-
-            });
-
-        }
-    );
-
-}
-
-
-// =====================================
-// CLEAR RAID PLANNER
-// =====================================
-
-function clearRaidPlanner() {
-
-    const playerPoolElement =
-        document.getElementById("playerPool");
-
-    if (!playerPoolElement) {
-        return;
-    }
-
-    document
-        .querySelectorAll(".partyPlayers .player-card")
-        .forEach((card) => {
-
-            playerPoolElement.appendChild(card);
-
-        });
-
-    localStorage.removeItem("risqueRaidPlanner");
 
     updatePlannerCounts();
-
 }
 
-
-// =====================================
-// START PLANNER
-// =====================================
-
-function startRaidPlanner() {
-
-    initializeRaidPlanner();
-
-}
 
 if (document.readyState === "loading") {
 
@@ -540,5 +493,4 @@ if (document.readyState === "loading") {
 } else {
 
     startRaidPlanner();
-
 }
