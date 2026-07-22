@@ -23,6 +23,8 @@ function renderPlayerPool(){
 
         const card = document.createElement("div");
 
+        card.dataset.ign = player.ign;
+
         card.className = `player-card ${getClassCSS(player.class)}`;
 
         card.innerHTML = `
