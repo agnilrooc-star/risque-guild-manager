@@ -2,6 +2,9 @@
 // PLAYER POOL
 // =========================================
 
+let selectedClassFilter = "all";
+
+
 function getClassImage(playerClass) {
 
     const safeClass = String(playerClass || "unknown")
@@ -39,6 +42,7 @@ function getAssignedPlayerNames() {
                     .trim();
 
             if (playerName) {
+
                 assignedPlayers.add(
                     playerName.toLowerCase()
                 );
@@ -50,7 +54,7 @@ function getAssignedPlayerNames() {
 
 
 // =========================================
-// UPDATE PLAYER COUNT
+// UPDATE PLAYER POOL COUNT
 // =========================================
 
 function updatePlayerPoolCount() {
@@ -65,12 +69,83 @@ function updatePlayerPoolCount() {
         return;
     }
 
-    const total =
-        pool.querySelectorAll(".player-card")
-            .length;
+    const visibleCards =
+        Array.from(
+            pool.querySelectorAll(".player-card")
+        )
+        .filter((card) => {
+
+            return card.style.display !== "none";
+        })
+        .length;
 
     playerCount.innerText =
-        `${total} Players`;
+        `${visibleCards} Players`;
+}
+
+
+// =========================================
+// APPLY CLASS FILTER
+// =========================================
+
+function applyClassFilter() {
+
+    const pool =
+        document.getElementById("playerPool");
+
+    if (!pool) {
+        return;
+    }
+
+    pool
+        .querySelectorAll(".player-card")
+        .forEach((card) => {
+
+            const playerClass =
+                String(
+                    card.dataset.playerClass || ""
+                )
+                    .trim()
+                    .toLowerCase();
+
+            const shouldShow =
+                selectedClassFilter === "all" ||
+                playerClass === selectedClassFilter;
+
+            card.style.display =
+                shouldShow ? "" : "none";
+        });
+
+    updatePlayerPoolCount();
+}
+
+
+// =========================================
+// SETUP CLASS FILTER
+// =========================================
+
+function initializeClassFilter() {
+
+    const classFilter =
+        document.getElementById("classFilter");
+
+    if (!classFilter) {
+        return;
+    }
+
+    classFilter.value =
+        selectedClassFilter;
+
+    classFilter.addEventListener(
+        "change",
+        () => {
+
+            selectedClassFilter =
+                classFilter.value;
+
+            applyClassFilter();
+        }
+    );
 }
 
 
@@ -122,7 +197,7 @@ function returnPlayerToPool(card) {
 
     pool.appendChild(card);
 
-    updatePlayerPoolCount();
+    applyClassFilter();
 
     if (
         typeof updatePlannerCounts ===
@@ -164,6 +239,11 @@ function renderPlayerPool() {
         const playerName =
             String(player.ign || "").trim();
 
+        const playerClass =
+            String(player.class || "")
+                .trim()
+                .toLowerCase();
+
         if (!playerName) {
             return;
         }
@@ -181,6 +261,9 @@ function renderPlayerPool() {
 
         card.dataset.ign =
             playerName;
+
+        card.dataset.playerClass =
+            playerClass;
 
         card.className =
             `player-card ${getClassCSS(player.class)}`;
@@ -239,5 +322,22 @@ function renderPlayerPool() {
         pool.appendChild(card);
     });
 
-    updatePlayerPoolCount();
+    applyClassFilter();
+}
+
+
+// =========================================
+// START CLASS FILTER
+// =========================================
+
+if (document.readyState === "loading") {
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        initializeClassFilter
+    );
+
+} else {
+
+    initializeClassFilter();
 }
