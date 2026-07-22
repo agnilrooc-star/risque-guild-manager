@@ -21,7 +21,7 @@ function getClassCSS(playerClass) {
 
 
 // =========================================
-// GET PLAYERS ALREADY INSIDE RAID PARTIES
+// GET ASSIGNED PLAYERS
 // =========================================
 
 function getAssignedPlayerNames() {
@@ -50,6 +50,31 @@ function getAssignedPlayerNames() {
 
 
 // =========================================
+// UPDATE PLAYER COUNT
+// =========================================
+
+function updatePlayerPoolCount() {
+
+    const pool =
+        document.getElementById("playerPool");
+
+    const playerCount =
+        document.getElementById("playerCount");
+
+    if (!pool || !playerCount) {
+        return;
+    }
+
+    const total =
+        pool.querySelectorAll(".player-card")
+            .length;
+
+    playerCount.innerText =
+        `${total} Players`;
+}
+
+
+// =========================================
 // RETURN PLAYER TO POOL
 // =========================================
 
@@ -72,7 +97,6 @@ function returnPlayerToPool(card) {
         return;
     }
 
-    // Remove duplicate copies already in the pool
     document
         .querySelectorAll("#playerPool .player-card")
         .forEach((poolCard) => {
@@ -117,31 +141,6 @@ function returnPlayerToPool(card) {
 
 
 // =========================================
-// UPDATE PLAYER POOL COUNT
-// =========================================
-
-function updatePlayerPoolCount() {
-
-    const pool =
-        document.getElementById("playerPool");
-
-    const count =
-        document.getElementById("playerCount");
-
-    if (!pool || !count) {
-        return;
-    }
-
-    const total =
-        pool.querySelectorAll(".player-card")
-            .length;
-
-    count.innerText =
-        `${total} Players`;
-}
-
-
-// =========================================
 // RENDER PLAYER POOL
 // =========================================
 
@@ -169,7 +168,6 @@ function renderPlayerPool() {
             return;
         }
 
-        // Do not recreate players already assigned
         if (
             assignedPlayers.has(
                 playerName.toLowerCase()
@@ -200,7 +198,7 @@ function renderPlayerPool() {
                 type="button"
                 title="Return player to pool"
             >
-                ↩
+                ✕
             </button>
 
             <img
