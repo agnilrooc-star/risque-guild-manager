@@ -842,7 +842,308 @@ function clearRaidPlanner() {
     updatePlannerCounts();
 }
 
+// =========================================
+// CLEAR PLANNER WITH CONFIRMATION
+// =========================================
 
+function confirmClearPlanner() {
+
+    const assignedPlayers =
+        document.querySelectorAll(
+            ".partyPlayers .player-card"
+        ).length;
+
+    if (assignedPlayers === 0) {
+
+        alert("The raid planner is already empty.");
+
+        return;
+    }
+
+    const shouldClear =
+        window.confirm(
+            "Return all players to the Player Pool?"
+        );
+
+    if (!shouldClear) {
+        return;
+    }
+
+    clearRaidPlanner();
+}
+
+
+// =========================================
+// WAIT FOR IMAGES TO LOAD
+// =========================================
+
+function waitForPlannerImages(container) {
+
+    const images =
+        Array.from(
+            container.querySelectorAll("img")
+        );
+
+    const imagePromises =
+        images.map((image) => {
+
+            if (image.complete) {
+                return Promise.resolve();
+            }
+
+            return new Promise((resolve) => {
+
+                image.addEventListener(
+                    "load",
+                    resolve,
+                    { once: true }
+                );
+
+                image.addEventListener(
+                    "error",
+                    resolve,
+                    { once: true }
+                );
+            });
+        });
+
+    return Promise.all(imagePromises);
+}
+
+
+// =========================================
+// EXPORT FULL RAID SETUP AS PNG
+// =========================================
+
+async function exportRaidSetup() {
+
+    const planner =
+        document.querySelector(".planner");
+
+    const exportButton =
+        document.getElementById(
+            "exportPlannerButton"
+        );
+
+    if (!planner) {
+
+        alert("Raid planner was not found.");
+
+        return;
+    }
+
+    if (typeof html2canvas === "undefined") {
+
+        alert(
+            "Image exporter did not load. Refresh the page and try again."
+        );
+
+        return;
+    }
+
+    const assignedPlayers =
+        document.querySelectorAll(
+            ".partyPlayers .player-card"
+        ).length;
+
+    if (assignedPlayers === 0) {
+
+        const continueExport =
+            window.confirm(
+                "The planner is empty. Export it anyway?"
+            );
+
+        if (!continueExport) {
+            return;
+        }
+    }
+
+    const originalButtonText =
+        exportButton
+            ? exportButton.textContent
+            : "";
+
+    if (exportButton) {
+
+        exportButton.disabled = true;
+
+        exportButton.textContent =
+            "Creating Image...";
+    }
+
+    document.body.classList.add(
+        "exporting-planner"
+    );
+
+    try {
+
+        await waitForPlannerImages(planner);
+
+        const canvas =
+            await html2canvas(
+                planner,
+                {
+                    backgroundColor: "#0f1115",
+
+                    scale: 2,
+
+                    useCORS: true,
+
+                    allowTaint: false,
+
+                    logging: false,
+
+                    scrollX: 0,
+
+                    scrollY: -window.scrollY,
+
+                    windowWidth:
+                        planner.scrollWidth,
+
+                    windowHeight:
+                        planner.scrollHeight,
+
+                    onclone: function (
+                        clonedDocument
+                    ) {
+
+                        const clonedPlanner =
+                            clonedDocument
+                                .querySelector(
+                                    ".planner"
+                                );
+
+                        const clonedActions =
+                            clonedDocument
+                                .querySelector(
+                                    ".planner-actions"
+                                );
+
+                        if (clonedActions) {
+
+                            clonedActions.style.display =
+                                "none";
+                        }
+
+                        clonedDocument
+                            .querySelectorAll(
+                                ".return-player-button"
+                            )
+                            .forEach((button) => {
+
+                                button.style.display =
+                                    "none";
+                            });
+
+                        if (clonedPlanner) {
+
+                            clonedPlanner.style.width =
+                                `${planner.scrollWidth}px`;
+
+                            clonedPlanner.style.height =
+                                "auto";
+
+                            clonedPlanner.style.maxHeight =
+                                "none";
+
+                            clonedPlanner.style.overflow =
+                                "visible";
+
+                            clonedPlanner.style.padding =
+                                "30px";
+                        }
+                    }
+                }
+            );
+
+        const imageURL =
+            canvas.toDataURL(
+                "image/png",
+                1
+            );
+
+        const downloadLink =
+            document.createElement("a");
+
+        const currentDate =
+            new Date()
+                .toISOString()
+                .slice(0, 10);
+
+        downloadLink.href =
+            imageURL;
+
+        downloadLink.download =
+            `risque-raid-setup-${currentDate}.png`;
+
+        document.body.appendChild(
+            downloadLink
+        );
+
+        downloadLink.click();
+
+        downloadLink.remove();
+
+    } catch (error) {
+
+        console.error(
+            "Raid export failed:",
+            error
+        );
+
+        alert(
+            "Unable to export the raid setup. Make sure all class images are loading correctly."
+        );
+
+    } finally {
+
+        document.body.classList.remove(
+            "exporting-planner"
+        );
+
+        if (exportButton) {
+
+            exportButton.disabled = false;
+
+            exportButton.textContent =
+                originalButtonText;
+        }
+    }
+}
+
+
+// =========================================
+// PLANNER ACTION BUTTONS
+// =========================================
+
+function initializePlannerActions() {
+
+    const clearButton =
+        document.getElementById(
+            "clearPlannerButton"
+        );
+
+    const exportButton =
+        document.getElementById(
+            "exportPlannerButton"
+        );
+
+    if (clearButton) {
+
+        clearButton.addEventListener(
+            "click",
+            confirmClearPlanner
+        );
+    }
+
+    if (exportButton) {
+
+        exportButton.addEventListener(
+            "click",
+            exportRaidSetup
+        );
+    }
+}
 // =========================================
 // START PLANNER
 // =========================================
