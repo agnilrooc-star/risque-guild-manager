@@ -170,3 +170,134 @@ nav{
 }
 
 }
+
+/*=========================
+PLAYER CARD
+=========================*/
+
+.player-card{
+
+    width:170px;
+    height:200px;
+
+    background:#20242c;
+
+    border-radius:16px;
+
+    border:3px solid #555;
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    padding:14px;
+
+    cursor:grab;
+
+    transition:.25s;
+
+    position:relative;
+
+}
+
+.player-card:hover{
+
+    transform:translateY(-5px);
+
+    box-shadow:0 0 18px rgba(0,0,0,.35);
+
+}
+
+.player-icon{
+
+    width:70px;
+
+    height:70px;
+
+    object-fit:contain;
+
+}
+
+.player-name{
+
+    font-size:18px;
+
+    font-weight:bold;
+
+    text-align:center;
+
+}
+
+.player-role{
+
+    color:#b9c2d0;
+
+    font-size:14px;
+
+}
+
+.player-gs{
+
+    background:#2e3440;
+
+    padding:5px 12px;
+
+    border-radius:20px;
+
+    font-size:13px;
+
+    font-weight:bold;
+
+}
+
+.elite{
+
+    position:absolute;
+
+    top:10px;
+
+    right:10px;
+
+    font-size:20px;
+
+}
+
+#playerPool{
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:15px;
+
+}
+
+.pool-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:18px;
+
+}
+
+.pool-title{
+
+    font-size:22px;
+
+    font-weight:bold;
+
+}
+
+#playerCount{
+
+    color:#59ff8d;
+
+}
