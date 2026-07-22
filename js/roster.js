@@ -1,11 +1,9 @@
-alert("Roster.js Loaded");
-
 function renderRoster(){
 
-    alert("renderRoster() called");
+    alert("renderRoster called");
 
     const table = document.getElementById("rosterTable");
 
-    table.innerHTML = "<h1 style='color:white;'>IT WORKS</h1>";
+    table.innerHTML = "<h1 style='color:white'>IT WORKS!</h1>";
 
 }
