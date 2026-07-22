@@ -6,17 +6,16 @@ function getClassImage(playerClass){
 
 function renderRoster(){
 
+    console.log("renderRoster called");
+    console.log(guildMembers);
+
     const table = document.getElementById("rosterTable");
 
-    table.innerHTML = "";
+    table.innerHTML = "<h3>TEST</h3>";
 
-    if(guildMembers.length === 0){
+}
 
-        table.innerHTML = "<p>No guild members found.</p>";
-
-        return;
-
-    }
+    
 
     guildMembers.forEach(player=>{
 
