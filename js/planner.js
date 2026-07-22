@@ -1,33 +1,56 @@
 // =========================================
 // RISQUE RAID PLANNER
-// Raid boxes + drag and drop + local saving
+// Raid boxes, drag-and-drop, saving,
+// restoring, party limits and player counts
 // =========================================
+
+const MAX_PLAYERS_PER_PARTY = 5;
+
+let plannerIsRestoring = false;
+let playerPoolRefreshTimer = null;
 
 
 // =========================================
 // CREATE ONE RAID SECTION
 // =========================================
 
-function createRaidSection(containerId, raidTitle, partyCount) {
+function createRaidSection(
+    containerId,
+    raidTitle,
+    partyCount
+) {
 
-    const container = document.getElementById(containerId);
+    const container =
+        document.getElementById(containerId);
 
     if (!container) {
-        console.error(`Raid container not found: ${containerId}`);
+
+        console.error(
+            `Raid container not found: ${containerId}`
+        );
+
         return;
     }
 
     let partiesHTML = "";
 
-    for (let number = 1; number <= partyCount; number++) {
+    for (
+        let partyNumber = 1;
+        partyNumber <= partyCount;
+        partyNumber++
+    ) {
 
-        const partyId = `${containerId}Party${number}`;
+        const partyId =
+            `${containerId}Party${partyNumber}`;
 
         partiesHTML += `
             <div class="party">
 
-                <h3 data-original-title="Party ${number}">
-                    Party ${number} (0)
+                <h3
+                    data-original-title="Party ${partyNumber}"
+                >
+                    Party ${partyNumber}
+                    (0/${MAX_PLAYERS_PER_PARTY})
                 </h3>
 
                 <div
@@ -95,18 +118,74 @@ function getCardPlayerName(card) {
         return "";
     }
 
-    return (
+    return String(
         card.dataset.ign ||
-        card.querySelector(".player-name")
-            ?.textContent
-            .trim() ||
+        card
+            .querySelector(".player-name")
+            ?.textContent ||
         ""
-    );
+    ).trim();
 }
 
 
 // =========================================
-// UPDATE COUNTS
+// REMOVE DUPLICATE PLAYER CARDS
+// =========================================
+
+function removeDuplicatePlayerCards() {
+
+    const existingPlayers =
+        new Set();
+
+    /*
+     * Raid cards are checked first.
+     * This keeps assigned players inside raids.
+     */
+    const raidCards =
+        Array.from(
+            document.querySelectorAll(
+                ".partyPlayers .player-card"
+            )
+        );
+
+    const poolCards =
+        Array.from(
+            document.querySelectorAll(
+                "#playerPool .player-card"
+            )
+        );
+
+    const allCards = [
+        ...raidCards,
+        ...poolCards
+    ];
+
+    allCards.forEach((card) => {
+
+        const playerName =
+            getCardPlayerName(card);
+
+        if (!playerName) {
+            return;
+        }
+
+        const playerKey =
+            playerName.toLowerCase();
+
+        if (existingPlayers.has(playerKey)) {
+
+            card.remove();
+
+            return;
+        }
+
+        existingPlayers.add(playerKey);
+    });
+}
+
+
+// =========================================
+// UPDATE PARTY AND PLAYER POOL COUNTS
 // =========================================
 
 function updatePlannerCounts() {
@@ -119,7 +198,9 @@ function updatePlannerCounts() {
                 party.querySelector("h3");
 
             const playerArea =
-                party.querySelector(".partyPlayers");
+                party.querySelector(
+                    ".partyPlayers"
+                );
 
             if (!title || !playerArea) {
                 return;
@@ -128,34 +209,56 @@ function updatePlannerCounts() {
             const originalTitle =
                 title.dataset.originalTitle ||
                 title.textContent
-                    .replace(/\s*\(\d+\)$/, "")
+                    .replace(
+                        /\s*\(\d+\/\d+\)$/,
+                        ""
+                    )
+                    .replace(
+                        /\s*\(\d+\)$/,
+                        ""
+                    )
                     .trim();
 
             title.dataset.originalTitle =
                 originalTitle;
 
-            const playerTotal =
-                playerArea.querySelectorAll(
-                    ".player-card"
-                ).length;
+            const totalPlayers =
+                playerArea
+                    .querySelectorAll(
+                        ".player-card"
+                    )
+                    .length;
 
             title.textContent =
-                `${originalTitle} (${playerTotal})`;
+                `${originalTitle} ` +
+                `(${totalPlayers}/${MAX_PLAYERS_PER_PARTY})`;
+
+            party.classList.toggle(
+                "party-full",
+                totalPlayers >=
+                    MAX_PLAYERS_PER_PARTY
+            );
         });
 
 
     const playerPool =
-        document.getElementById("playerPool");
+        document.getElementById(
+            "playerPool"
+        );
 
     const playerCount =
-        document.getElementById("playerCount");
+        document.getElementById(
+            "playerCount"
+        );
 
     if (playerPool && playerCount) {
 
         const availablePlayers =
-            playerPool.querySelectorAll(
-                ".player-card"
-            ).length;
+            playerPool
+                .querySelectorAll(
+                    ".player-card"
+                )
+                .length;
 
         playerCount.textContent =
             `${availablePlayers} Players`;
@@ -169,20 +272,30 @@ function updatePlannerCounts() {
 
 function savePlannerLayout() {
 
+    if (plannerIsRestoring) {
+        return;
+    }
+
     const plannerData = {};
 
     document
-        .querySelectorAll(".partyPlayers")
+        .querySelectorAll(
+            ".partyPlayers"
+        )
         .forEach((partyContainer) => {
 
             if (!partyContainer.id) {
                 return;
             }
 
-            plannerData[partyContainer.id] = [];
+            plannerData[
+                partyContainer.id
+            ] = [];
 
             partyContainer
-                .querySelectorAll(".player-card")
+                .querySelectorAll(
+                    ".player-card"
+                )
                 .forEach((card) => {
 
                     const playerName =
@@ -205,10 +318,14 @@ function savePlannerLayout() {
 
 
 // =========================================
-// RESTORE SAVED PLANNER
+// RESTORE SAVED PLANNER LAYOUT
 // =========================================
 
 function restorePlannerLayout() {
+
+    if (plannerIsRestoring) {
+        return;
+    }
 
     const savedData =
         localStorage.getItem(
@@ -216,7 +333,9 @@ function restorePlannerLayout() {
         );
 
     if (!savedData) {
+
         updatePlannerCounts();
+
         return;
     }
 
@@ -241,58 +360,226 @@ function restorePlannerLayout() {
         return;
     }
 
-    Object.entries(plannerData)
-        .forEach(
-            ([partyId, playerNames]) => {
+    plannerIsRestoring = true;
 
-                const partyContainer =
-                    document.getElementById(
-                        partyId
-                    );
+    try {
 
-                if (!partyContainer) {
-                    return;
-                }
+        Object.entries(plannerData)
+            .forEach(
+                ([
+                    partyContainerId,
+                    playerNames
+                ]) => {
 
-                playerNames.forEach(
-                    (playerName) => {
+                    const partyContainer =
+                        document.getElementById(
+                            partyContainerId
+                        );
 
-                        const playerCards =
-                            document.querySelectorAll(
-                                "#playerPool .player-card"
-                            );
-
-                        const matchingCard =
-                            Array.from(
-                                playerCards
-                            ).find((card) => {
-
-                                return (
-                                    getCardPlayerName(card) ===
-                                    playerName
-                                );
-                            });
-
-                        if (matchingCard) {
-
-                            partyContainer.appendChild(
-                                matchingCard
-                            );
-                        }
+                    if (!partyContainer) {
+                        return;
                     }
-                );
-            }
-        );
 
-    updatePlannerCounts();
+                    playerNames
+                        .slice(
+                            0,
+                            MAX_PLAYERS_PER_PARTY
+                        )
+                        .forEach(
+                            (playerName) => {
+
+                                /*
+                                 * Skip the player if already
+                                 * assigned to any raid party.
+                                 */
+                                const assignedCard =
+                                    Array.from(
+                                        document
+                                            .querySelectorAll(
+                                                ".partyPlayers .player-card"
+                                            )
+                                    )
+                                    .find(
+                                        (card) =>
+                                            getCardPlayerName(
+                                                card
+                                            )
+                                                .toLowerCase() ===
+                                            String(
+                                                playerName
+                                            )
+                                                .trim()
+                                                .toLowerCase()
+                                    );
+
+                                if (assignedCard) {
+                                    return;
+                                }
+
+                                const matchingCard =
+                                    Array.from(
+                                        document
+                                            .querySelectorAll(
+                                                "#playerPool .player-card"
+                                            )
+                                    )
+                                    .find(
+                                        (card) =>
+                                            getCardPlayerName(
+                                                card
+                                            )
+                                                .toLowerCase() ===
+                                            String(
+                                                playerName
+                                            )
+                                                .trim()
+                                                .toLowerCase()
+                                    );
+
+                                if (
+                                    matchingCard &&
+                                    partyContainer
+                                        .querySelectorAll(
+                                            ".player-card"
+                                        )
+                                        .length <
+                                        MAX_PLAYERS_PER_PARTY
+                                ) {
+
+                                    partyContainer
+                                        .appendChild(
+                                            matchingCard
+                                        );
+                                }
+                            }
+                        );
+                }
+            );
+
+        removeDuplicatePlayerCards();
+
+        updatePlannerCounts();
+
+    } finally {
+
+        plannerIsRestoring = false;
+    }
 }
 
 
 // =========================================
-// DRAG EVENT
+// SHOW PARTY LIMIT WARNING
+// =========================================
+
+function showPartyLimitWarning(
+    partyContainer
+) {
+
+    const party =
+        partyContainer.closest(
+            ".party"
+        );
+
+    const warningTarget =
+        party || partyContainer;
+
+    warningTarget.classList.add(
+        "party-drop-denied"
+    );
+
+    window.setTimeout(() => {
+
+        warningTarget.classList.remove(
+            "party-drop-denied"
+        );
+
+    }, 500);
+}
+
+
+// =========================================
+// CHECK IF PLAYER CAN ENTER PARTY
+// =========================================
+
+function canMovePlayerToParty(event) {
+
+    const destination =
+        event.to;
+
+    const source =
+        event.from;
+
+    /*
+     * Allow rearranging players inside
+     * the same party.
+     */
+    if (destination === source) {
+        return true;
+    }
+
+    const playerName =
+        getCardPlayerName(
+            event.dragged
+        ).toLowerCase();
+
+    /*
+     * Prevent the same player from being
+     * assigned more than once.
+     */
+    const duplicateCard =
+        Array.from(
+            document.querySelectorAll(
+                ".partyPlayers .player-card"
+            )
+        ).find((card) => {
+
+            return (
+                card !== event.dragged &&
+                getCardPlayerName(card)
+                    .toLowerCase() ===
+                    playerName
+            );
+        });
+
+    if (duplicateCard) {
+
+        showPartyLimitWarning(
+            destination
+        );
+
+        return false;
+    }
+
+    const currentPlayers =
+        destination
+            .querySelectorAll(
+                ".player-card"
+            )
+            .length;
+
+    if (
+        currentPlayers >=
+        MAX_PLAYERS_PER_PARTY
+    ) {
+
+        showPartyLimitWarning(
+            destination
+        );
+
+        return false;
+    }
+
+    return true;
+}
+
+
+// =========================================
+// HANDLE DRAG-AND-DROP CHANGE
 // =========================================
 
 function handlePlannerChange() {
+
+    removeDuplicatePlayerCards();
 
     updatePlannerCounts();
 
@@ -306,7 +593,10 @@ function handlePlannerChange() {
 
 function initializeDragAndDrop() {
 
-    if (typeof Sortable === "undefined") {
+    if (
+        typeof Sortable ===
+        "undefined"
+    ) {
 
         console.error(
             "SortableJS did not load."
@@ -330,81 +620,150 @@ function initializeDragAndDrop() {
     }
 
 
-    // Player Pool drag-and-drop
+    // PLAYER POOL
 
-    if (!playerPool.dataset.sortableReady) {
+    if (
+        !playerPool.dataset
+            .sortableReady
+    ) {
 
-        new Sortable(playerPool, {
+        new Sortable(
+            playerPool,
+            {
 
-            group: {
-                name: "guildPlayers",
-                pull: true,
-                put: true
-            },
+                group: {
+                    name: "guildPlayers",
+                    pull: true,
+                    put: true
+                },
 
-            animation: 180,
+                animation: 180,
 
-            ghostClass: "sortable-ghost",
+                ghostClass:
+                    "sortable-ghost",
 
-            chosenClass: "sortable-chosen",
+                chosenClass:
+                    "sortable-chosen",
 
-            dragClass: "sortable-drag",
+                dragClass:
+                    "sortable-drag",
 
-            onEnd: handlePlannerChange
-        });
+                onEnd:
+                    handlePlannerChange
+            }
+        );
 
-        playerPool.dataset.sortableReady =
-            "true";
+        playerPool.dataset
+            .sortableReady = "true";
     }
 
 
-    // Raid party drag-and-drop
+    // RAID PARTIES
 
     document
-        .querySelectorAll(".partyPlayers")
-        .forEach((partyContainer) => {
+        .querySelectorAll(
+            ".partyPlayers"
+        )
+        .forEach(
+            (partyContainer) => {
 
-            if (
-                partyContainer.dataset
-                    .sortableReady
-            ) {
-                return;
-            }
-
-            new Sortable(
-                partyContainer,
-                {
-
-                    group: {
-                        name: "guildPlayers",
-                        pull: true,
-                        put: true
-                    },
-
-                    animation: 180,
-
-                    ghostClass:
-                        "sortable-ghost",
-
-                    chosenClass:
-                        "sortable-chosen",
-
-                    dragClass:
-                        "sortable-drag",
-
-                    onEnd:
-                        handlePlannerChange
+                if (
+                    partyContainer.dataset
+                        .sortableReady
+                ) {
+                    return;
                 }
-            );
 
-            partyContainer.dataset
-                .sortableReady = "true";
-        });
+                new Sortable(
+                    partyContainer,
+                    {
+
+                        group: {
+                            name:
+                                "guildPlayers",
+                            pull: true,
+                            put: true
+                        },
+
+                        animation: 180,
+
+                        ghostClass:
+                            "sortable-ghost",
+
+                        chosenClass:
+                            "sortable-chosen",
+
+                        dragClass:
+                            "sortable-drag",
+
+                        onMove:
+                            canMovePlayerToParty,
+
+                        onEnd:
+                            handlePlannerChange
+                    }
+                );
+
+                partyContainer.dataset
+                    .sortableReady =
+                    "true";
+            }
+        );
 }
 
 
 // =========================================
-// WATCH FOR GOOGLE SHEETS PLAYERS
+// RETURN PLAYER TO PLAYER POOL
+// =========================================
+
+function returnPlayerToPool(card) {
+
+    const playerPool =
+        document.getElementById(
+            "playerPool"
+        );
+
+    if (!playerPool || !card) {
+        return;
+    }
+
+    const playerName =
+        getCardPlayerName(card)
+            .toLowerCase();
+
+    /*
+     * Remove an accidental pool duplicate
+     * before returning the raid card.
+     */
+    document
+        .querySelectorAll(
+            "#playerPool .player-card"
+        )
+        .forEach((poolCard) => {
+
+            if (
+                poolCard !== card &&
+                getCardPlayerName(poolCard)
+                    .toLowerCase() ===
+                    playerName
+            ) {
+
+                poolCard.remove();
+            }
+        });
+
+    playerPool.appendChild(card);
+
+    removeDuplicatePlayerCards();
+
+    updatePlannerCounts();
+
+    savePlannerLayout();
+}
+
+
+// =========================================
+// WATCH GOOGLE SHEETS PLAYER REFRESH
 // =========================================
 
 function watchPlayerPool() {
@@ -421,15 +780,32 @@ function watchPlayerPool() {
     const observer =
         new MutationObserver(() => {
 
-            restorePlannerLayout();
+            if (plannerIsRestoring) {
+                return;
+            }
 
-            updatePlannerCounts();
+            clearTimeout(
+                playerPoolRefreshTimer
+            );
+
+            playerPoolRefreshTimer =
+                setTimeout(() => {
+
+                    restorePlannerLayout();
+
+                    removeDuplicatePlayerCards();
+
+                    updatePlannerCounts();
+
+                }, 150);
         });
 
-    observer.observe(playerPool, {
-
-        childList: true
-    });
+    observer.observe(
+        playerPool,
+        {
+            childList: true
+        }
+    );
 }
 
 
@@ -461,6 +837,8 @@ function clearRaidPlanner() {
         "risqueRaidPlanner"
     );
 
+    removeDuplicatePlayerCards();
+
     updatePlannerCounts();
 }
 
@@ -483,7 +861,10 @@ function startRaidPlanner() {
 }
 
 
-if (document.readyState === "loading") {
+if (
+    document.readyState ===
+    "loading"
+) {
 
     document.addEventListener(
         "DOMContentLoaded",
