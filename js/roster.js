@@ -1,87 +1,217 @@
-// =====================================
-// GUILD ROSTER
-// =====================================
+// =========================================
+// ROSTER HELPERS
+// =========================================
 
-function getRosterClassImage(playerClass){
+function getRosterClassImage(playerClass) {
 
-    const cls = (playerClass || "unknown").toLowerCase();
+    const safeClass =
+        String(playerClass || "unknown")
+            .trim()
+            .toLowerCase();
 
-    return `assets/classes/${cls}.png`;
-
+    return `assets/classes/${safeClass}.png`;
 }
 
-function renderRoster(){
 
-    const table = document.getElementById("rosterTable");
+function getRosterClassCSS(playerClass) {
 
-    if(!table){
+    return String(playerClass || "")
+        .trim()
+        .toLowerCase();
+}
 
-        console.error("rosterTable not found");
 
-        return;
+function playerHasEliteStatus(value) {
 
+    if (value === true) {
+        return true;
     }
 
-    table.innerHTML = "";
+    const normalizedValue =
+        String(value || "")
+            .trim()
+            .toLowerCase();
 
-    if(!guildMembers || guildMembers.length === 0){
+    return (
+        normalizedValue === "true" ||
+        normalizedValue === "yes" ||
+        normalizedValue === "1" ||
+        normalizedValue === "elite"
+    );
+}
 
-        table.innerHTML = `
-            <div style="color:white;padding:20px;">
+
+// =========================================
+// CREATE ROSTER CARD
+// =========================================
+
+function createRosterCard(
+    player,
+    showEliteBadge = true
+) {
+
+    const card =
+        document.createElement("div");
+
+    card.className =
+        `player-card ${getRosterClassCSS(player.class)}`;
+
+    card.dataset.ign =
+        String(player.ign || "").trim();
+
+    card.innerHTML = `
+
+        ${
+            showEliteBadge &&
+            playerHasEliteStatus(player.elite)
+                ? '<div class="elite">⭐</div>'
+                : ""
+        }
+
+        <img
+            class="player-icon"
+            src="${getRosterClassImage(player.class)}"
+            alt="${player.class || "Unknown class"}"
+        >
+
+        <div class="player-info">
+
+            <div class="player-name">
+                ${player.ign || "Unknown Player"}
+            </div>
+
+            <div class="player-class">
+                ${player.class || "No Class"}
+            </div>
+
+            <div class="player-role">
+                ${player.role || "No Role"}
+            </div>
+
+            <div class="player-gs">
+                🏆 ${player.gear || "-"}
+            </div>
+
+        </div>
+    `;
+
+    return card;
+}
+
+
+// =========================================
+// FULL GUILD ROSTER
+// =========================================
+
+function renderRoster() {
+
+    const rosterTable =
+        document.getElementById(
+            "rosterTable"
+        );
+
+    if (!rosterTable) {
+        return;
+    }
+
+    rosterTable.innerHTML = "";
+
+    if (
+        !Array.isArray(guildMembers) ||
+        guildMembers.length === 0
+    ) {
+
+        rosterTable.innerHTML = `
+            <div class="empty-roster-message">
                 No guild members found.
             </div>
         `;
 
         return;
-
     }
 
-    guildMembers.forEach(player=>{
+    guildMembers.forEach((player) => {
 
-        const card = document.createElement("div");
+        rosterTable.appendChild(
+            createRosterCard(
+                player,
+                true
+            )
+        );
+    });
+}
 
-        card.className = `player-card ${(player.class || "").toLowerCase()}`;
 
-        card.innerHTML = `
+// =========================================
+// SUB LEAGUE
+// Players without Elite status
+// =========================================
 
-            <img
-                class="player-icon"
-                src="${getRosterClassImage(player.class)}"
-                alt="${player.class}"
-            >
+function renderSubLeague() {
 
-            <div class="player-info">
+    const subLeagueTable =
+        document.getElementById(
+            "subLeagueTable"
+        );
 
-                <div class="player-name">
+    const subLeagueCount =
+        document.getElementById(
+            "subLeagueCount"
+        );
 
-                    ${player.ign}
+    if (!subLeagueTable) {
+        return;
+    }
 
-                </div>
+    subLeagueTable.innerHTML = "";
 
-                <div class="player-class">
+    if (!Array.isArray(guildMembers)) {
 
-                    ${player.class}
+        if (subLeagueCount) {
+            subLeagueCount.textContent =
+                "0 Players";
+        }
 
-                </div>
+        return;
+    }
 
-                <div class="player-role">
+    const subLeaguePlayers =
+        guildMembers.filter((player) => {
 
-                    ${player.role}
+            return !playerHasEliteStatus(
+                player.elite
+            );
+        });
 
-                </div>
+    if (subLeagueCount) {
 
-                <div class="player-gs">
+        subLeagueCount.textContent =
+            `${subLeaguePlayers.length} ` +
+            `${
+                subLeaguePlayers.length === 1
+                    ? "Player"
+                    : "Players"
+            }`;
+    }
 
-                    GS ${player.gear || "-"}
+    if (subLeaguePlayers.length === 0) {
 
-                </div>
-
+        subLeagueTable.innerHTML = `
+            <div class="empty-roster-message">
+                No Sub League players found.
             </div>
-
         `;
 
-        table.appendChild(card);
+        return;
+    }
 
+    subLeaguePlayers.forEach((player) => {
+
+        subLeagueTable.appendChild(
+            createRosterCard(
+                player,
+                false
+            )
+        );
     });
-
 }
