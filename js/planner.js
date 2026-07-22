@@ -911,14 +911,13 @@ function waitForPlannerImages(container) {
 }
 
 
-// =========================================
-// EXPORT FULL RAID SETUP AS PNG
-// =========================================
-
 async function exportRaidSetup() {
 
     const planner =
         document.querySelector(".planner");
+
+    const actionButtons =
+        document.querySelector(".planner-actions");
 
     const exportButton =
         document.getElementById(
@@ -927,7 +926,7 @@ async function exportRaidSetup() {
 
     if (!planner) {
 
-        alert("Raid planner was not found.");
+        alert("Planner was not found.");
 
         return;
     }
@@ -935,33 +934,16 @@ async function exportRaidSetup() {
     if (typeof html2canvas === "undefined") {
 
         alert(
-            "Image exporter did not load. Refresh the page and try again."
+            "Image exporter did not load. Refresh the page."
         );
 
         return;
     }
 
-    const assignedPlayers =
-        document.querySelectorAll(
-            ".partyPlayers .player-card"
-        ).length;
-
-    if (assignedPlayers === 0) {
-
-        const continueExport =
-            window.confirm(
-                "The planner is empty. Export it anyway?"
-            );
-
-        if (!continueExport) {
-            return;
-        }
-    }
-
-    const originalButtonText =
+    const originalText =
         exportButton
             ? exportButton.textContent
-            : "";
+            : "Export Raid Setup";
 
     if (exportButton) {
 
@@ -971,19 +953,46 @@ async function exportRaidSetup() {
             "Creating Image...";
     }
 
-    document.body.classList.add(
-        "exporting-planner"
-    );
+    /*
+     * Hide buttons before taking the image.
+     */
+    if (actionButtons) {
+
+        actionButtons.style.display =
+            "none";
+    }
+
+    document
+        .querySelectorAll(
+            ".return-player-button"
+        )
+        .forEach((button) => {
+
+            button.dataset.previousDisplay =
+                button.style.display;
+
+            button.style.display =
+                "none";
+        });
 
     try {
 
-        await waitForPlannerImages(planner);
+        await new Promise((resolve) => {
+
+            requestAnimationFrame(() => {
+
+                requestAnimationFrame(
+                    resolve
+                );
+            });
+        });
 
         const canvas =
             await html2canvas(
                 planner,
                 {
-                    backgroundColor: "#0f1115",
+                    backgroundColor:
+                        "#0f1115",
 
                     scale: 2,
 
@@ -995,122 +1004,81 @@ async function exportRaidSetup() {
 
                     scrollX: 0,
 
-                    scrollY: -window.scrollY,
+                    scrollY: 0,
 
                     windowWidth:
                         planner.scrollWidth,
 
                     windowHeight:
-                        planner.scrollHeight,
-
-                    onclone: function (
-                        clonedDocument
-                    ) {
-
-                        const clonedPlanner =
-                            clonedDocument
-                                .querySelector(
-                                    ".planner"
-                                );
-
-                        const clonedActions =
-                            clonedDocument
-                                .querySelector(
-                                    ".planner-actions"
-                                );
-
-                        if (clonedActions) {
-
-                            clonedActions.style.display =
-                                "none";
-                        }
-
-                        clonedDocument
-                            .querySelectorAll(
-                                ".return-player-button"
-                            )
-                            .forEach((button) => {
-
-                                button.style.display =
-                                    "none";
-                            });
-
-                        if (clonedPlanner) {
-
-                            clonedPlanner.style.width =
-                                `${planner.scrollWidth}px`;
-
-                            clonedPlanner.style.height =
-                                "auto";
-
-                            clonedPlanner.style.maxHeight =
-                                "none";
-
-                            clonedPlanner.style.overflow =
-                                "visible";
-
-                            clonedPlanner.style.padding =
-                                "30px";
-                        }
-                    }
+                        planner.scrollHeight
                 }
             );
 
-        const imageURL =
-            canvas.toDataURL(
-                "image/png",
-                1
-            );
-
-        const downloadLink =
+        const link =
             document.createElement("a");
 
-        const currentDate =
+        const date =
             new Date()
                 .toISOString()
                 .slice(0, 10);
 
-        downloadLink.href =
-            imageURL;
+        link.download =
+            `risque-raid-setup-${date}.png`;
 
-        downloadLink.download =
-            `risque-raid-setup-${currentDate}.png`;
+        link.href =
+            canvas.toDataURL("image/png");
 
-        document.body.appendChild(
-            downloadLink
-        );
+        document.body.appendChild(link);
 
-        downloadLink.click();
+        link.click();
 
-        downloadLink.remove();
+        link.remove();
 
     } catch (error) {
 
         console.error(
-            "Raid export failed:",
+            "Export failed:",
             error
         );
 
         alert(
-            "Unable to export the raid setup. Make sure all class images are loading correctly."
+            "Unable to export the raid setup."
         );
 
     } finally {
 
-        document.body.classList.remove(
-            "exporting-planner"
-        );
+        /*
+         * Show buttons again after capture.
+         */
+        if (actionButtons) {
+
+            actionButtons.style.display =
+                "";
+        }
+
+        document
+            .querySelectorAll(
+                ".return-player-button"
+            )
+            .forEach((button) => {
+
+                button.style.display =
+                    button.dataset
+                        .previousDisplay || "";
+
+                delete button.dataset
+                    .previousDisplay;
+            });
 
         if (exportButton) {
 
             exportButton.disabled = false;
 
             exportButton.textContent =
-                originalButtonText;
+                originalText;
         }
     }
 }
-
 
 // =========================================
 // PLANNER ACTION BUTTONS
