@@ -8,7 +8,7 @@ let guildMembers = [];
 let playerPool = [];
 
 // =====================================
-// LOAD DATA
+// LOAD DATA FROM GOOGLE SHEETS
 // =====================================
 
 async function loadGuildMembers(){
@@ -19,33 +19,45 @@ async function loadGuildMembers(){
 
         const data = await response.json();
 
-        guildMembers = data;
+        guildMembers = data.map(player => ({
 
-        playerPool = guildMembers.filter(player => {
+            ign: player.ign || "",
 
-            return player.active === true ||
-                   player.active === "TRUE" ||
-                   player.active === "true";
+            class: player.class || "",
 
-        });
+            role: player.role || "",
+
+            gear: player.gear || player["Gear Rating"] || "",
+
+            elite:
+                player.elite === true ||
+                player.elite === "TRUE" ||
+                player.elite === "true" ||
+                player.elite === "Yes"
+
+        }));
+
+        // Only Elite players appear in the GL Player Pool
+        playerPool = guildMembers.filter(player => player.elite);
 
         renderPlayerPool();
+
         renderRoster();
 
     }
 
     catch(error){
 
-        console.error(error);
+        console.error("Google Sheets Error:", error);
 
     }
 
-
 }
-// Initial load
+
+// =====================================
+// AUTO REFRESH
+// =====================================
+
 loadGuildMembers();
 
-// Refresh every 5 seconds
 setInterval(loadGuildMembers,5000);
-
-
