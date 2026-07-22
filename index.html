@@ -27,23 +27,31 @@
 
         <nav>
 
-            <button
-                class="tab active"
-                id="plannerTab"
-                type="button"
-            >
-                Guild League Planner
-            </button>
+    <button
+        class="tab active"
+        id="plannerTab"
+        type="button"
+    >
+        Guild League Planner
+    </button>
 
-            <button
-                class="tab"
-                id="rosterTab"
-                type="button"
-            >
-                Guild Roster
-            </button>
+    <button
+        class="tab"
+        id="rosterTab"
+        type="button"
+    >
+        Guild Roster
+    </button>
 
-        </nav>
+    <button
+        class="tab"
+        id="subLeagueTab"
+        type="button"
+    >
+        Sub League
+    </button>
+
+</nav>
 
     </header>
 
@@ -160,7 +168,28 @@
         <div id="rosterTable"></div>
 
     </div>
+<div
+    id="subLeaguePage"
+    style="display:none;"
+>
 
+    <h2>Sub League</h2>
+
+    <div class="sub-league-header">
+
+        <p>
+            Non-Elite Guild Members
+        </p>
+
+        <div id="subLeagueCount">
+            0 Players
+        </div>
+
+    </div>
+
+    <div id="subLeagueTable"></div>
+
+</div>
 
     <!-- SortableJS loads only once -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
