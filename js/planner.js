@@ -1,7 +1,290 @@
 // =====================================
 // DRAG AND DROP RAID PLANNER
 // =====================================
+// =========================================
+// RISQUE RAID PLANNER
+// Creates raid boxes and enables drag/drop
+// =========================================
 
+
+// =========================================
+// CREATE ONE RAID SECTION
+// =========================================
+
+function createRaidSection(containerId, raidTitle, partyCount) {
+
+    const container = document.getElementById(containerId);
+
+    if (!container) {
+        console.error(`Container not found: ${containerId}`);
+        return;
+    }
+
+    let partiesHTML = "";
+
+    for (let number = 1; number <= partyCount; number++) {
+
+        const partyId = `${containerId}Party${number}`;
+
+        partiesHTML += `
+            <div class="party">
+
+                <h3 data-party-name="Party ${number}">
+                    Party ${number} (0)
+                </h3>
+
+                <div
+                    class="partyPlayers"
+                    id="${partyId}"
+                ></div>
+
+            </div>
+        `;
+    }
+
+    container.innerHTML = `
+        <section class="raid">
+
+            <h2>${raidTitle}</h2>
+
+            <div class="party-grid">
+                ${partiesHTML}
+            </div>
+
+        </section>
+    `;
+}
+
+
+// =========================================
+// CREATE ALL RAID BOXES
+// =========================================
+
+function createAllRaidBoxes() {
+
+    // Raid 1 has 6 parties
+    createRaidSection(
+        "raidOne",
+        "Raid 1",
+        6
+    );
+
+    // Raid 2 has 2 parties
+    createRaidSection(
+        "raidTwo",
+        "Raid 2",
+        2
+    );
+
+    // Raid 3 has 2 parties
+    createRaidSection(
+        "raidThree",
+        "Raid 3",
+        2
+    );
+
+    // Roaming has 2 parties
+    createRaidSection(
+        "roaming",
+        "Roaming",
+        2
+    );
+}
+
+
+// =========================================
+// UPDATE PARTY COUNTS
+// =========================================
+
+function updatePlannerCounts() {
+
+    document.querySelectorAll(".party").forEach((party) => {
+
+        const title = party.querySelector("h3");
+        const playerArea = party.querySelector(".partyPlayers");
+
+        if (!title || !playerArea) {
+            return;
+        }
+
+        const partyName =
+            title.dataset.partyName || "Party";
+
+        const playerCount =
+            playerArea.querySelectorAll(".player-card").length;
+
+        title.textContent =
+            `${partyName} (${playerCount})`;
+    });
+
+    const playerPool =
+        document.getElementById("playerPool");
+
+    const playerCountElement =
+        document.getElementById("playerCount");
+
+    if (playerPool && playerCountElement) {
+
+        const availablePlayers =
+            playerPool.querySelectorAll(".player-card").length;
+
+        playerCountElement.textContent =
+            `${availablePlayers} Players`;
+    }
+}
+
+
+// =========================================
+// SAVE RAID PLANNER
+// =========================================
+
+function savePlannerLayout() {
+
+    const savedPlanner = {};
+
+    document.querySelectorAll(".partyPlayers").forEach((partyArea) => {
+
+        savedPlanner[partyArea.id] = [];
+
+        partyArea
+            .querySelectorAll(".player-card")
+            .forEach((card) => {
+
+                const playerName =
+                    card.dataset.ign ||
+                    card.querySelector(".player-name")
+                        ?.textContent
+                        .trim();
+
+                if (playerName) {
+                    savedPlanner[partyArea.id].push(playerName);
+                }
+            });
+    });
+
+    localStorage.setItem(
+        "risqueRaidPlanner",
+        JSON.stringify(savedPlanner)
+    );
+}
+
+
+// =========================================
+// ENABLE DRAG AND DROP
+// =========================================
+
+function initializeDragAndDrop() {
+
+    if (typeof Sortable === "undefined") {
+
+        console.error("SortableJS did not load.");
+
+        return;
+    }
+
+    const playerPool =
+        document.getElementById("playerPool");
+
+    if (!playerPool) {
+
+        console.error("Player Pool was not found.");
+
+        return;
+    }
+
+    // Prevent duplicate Sortable initialization
+    if (!playerPool.dataset.sortableReady) {
+
+        new Sortable(playerPool, {
+
+            group: {
+                name: "guildPlayers",
+                pull: true,
+                put: true
+            },
+
+            animation: 180,
+
+            ghostClass: "sortable-ghost",
+
+            chosenClass: "sortable-chosen",
+
+            dragClass: "sortable-drag",
+
+            onEnd: function () {
+
+                updatePlannerCounts();
+
+                savePlannerLayout();
+            }
+        });
+
+        playerPool.dataset.sortableReady = "true";
+    }
+
+
+    document
+        .querySelectorAll(".partyPlayers")
+        .forEach((partyArea) => {
+
+            if (partyArea.dataset.sortableReady) {
+                return;
+            }
+
+            new Sortable(partyArea, {
+
+                group: {
+                    name: "guildPlayers",
+                    pull: true,
+                    put: true
+                },
+
+                animation: 180,
+
+                ghostClass: "sortable-ghost",
+
+                chosenClass: "sortable-chosen",
+
+                dragClass: "sortable-drag",
+
+                onEnd: function () {
+
+                    updatePlannerCounts();
+
+                    savePlannerLayout();
+                }
+            });
+
+            partyArea.dataset.sortableReady = "true";
+        });
+}
+
+
+// =========================================
+// START RAID PLANNER
+// =========================================
+
+function startRaidPlanner() {
+
+    createAllRaidBoxes();
+
+    initializeDragAndDrop();
+
+    updatePlannerCounts();
+}
+
+
+if (document.readyState === "loading") {
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        startRaidPlanner
+    );
+
+} else {
+
+    startRaidPlanner();
+}
 function initializeRaidPlanner() {
 
     const playerPoolElement = document.getElementById("playerPool");
