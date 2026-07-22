@@ -835,3 +835,123 @@ nav {
 .exporting-planner .return-player-button {
     display: none !important;
 }
+/* =========================================
+   SUB LEAGUE PAGE
+========================================= */
+
+#subLeaguePage {
+    min-height: calc(100vh - 75px);
+    padding: 28px;
+    overflow-y: auto;
+    background: #0f1115;
+}
+
+#subLeaguePage h2 {
+    color: #59ff8d;
+    font-size: 27px;
+    margin-bottom: 8px;
+}
+
+.sub-league-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 22px;
+}
+
+.sub-league-header p {
+    color: #9ca6b4;
+    font-size: 14px;
+}
+
+#subLeagueCount {
+    background: #242832;
+    color: #59ff8d;
+    border: 1px solid #3b4350;
+    border-radius: 20px;
+    padding: 7px 13px;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+#subLeagueTable {
+    display: grid;
+    grid-template-columns:
+        repeat(auto-fill, minmax(285px, 1fr));
+    gap: 18px;
+    align-items: stretch;
+}
+
+#subLeagueTable .player-card {
+    width: 100%;
+    min-height: 130px;
+    height: auto;
+    padding: 16px;
+
+    display: grid;
+    grid-template-columns: 70px 1fr;
+    gap: 14px;
+    align-items: center;
+
+    cursor: default;
+}
+
+#subLeagueTable .player-card:hover {
+    transform: translateY(-2px);
+}
+
+#subLeagueTable .player-icon {
+    width: 64px;
+    height: 64px;
+}
+
+#subLeagueTable .player-info {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+#subLeagueTable .player-name,
+#subLeagueTable .player-class,
+#subLeagueTable .player-role {
+    text-align: left;
+}
+
+#subLeagueTable .player-name {
+    font-size: 18px;
+}
+
+#subLeagueTable .player-gs {
+    margin-top: 4px;
+}
+
+.empty-roster-message {
+    padding: 25px;
+    background: #181b22;
+    border: 1px solid #303744;
+    border-radius: 12px;
+    color: #9ca6b4;
+}
+
+
+/* Mobile Sub League */
+
+@media (max-width: 800px) {
+
+    #subLeaguePage {
+        padding: 18px 14px;
+    }
+
+    .sub-league-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    #subLeagueTable {
+        grid-template-columns: 1fr;
+        gap: 13px;
+    }
+}
