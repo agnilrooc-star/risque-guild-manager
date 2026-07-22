@@ -2,7 +2,7 @@
 // GOOGLE SHEETS CONFIG
 // =====================================
 
-const API_URL = "https://script.google.com/macros/s/AKfycbxnepH5bglAVBTaeUBddyb-U8ptc7s3PpurUYRLRFGUG3jNfC2druVqQ--9wt0vqtaPpg/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbycY-OfC9-NGLliPuXG-JxN2TwnGEcGPjAsyVHWoUWQHptNE2Q12xhuRZceIuO9XIbqzw/exec";
 
 let guildMembers = [];
 let playerPool = [];
