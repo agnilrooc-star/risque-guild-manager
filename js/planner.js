@@ -1176,3 +1176,173 @@ if (
 
     startRaidPlanner();
 }
+// =========================================
+// FORCE PLANNER BUTTONS TO WORK
+// =========================================
+
+function setupPlannerButtons() {
+
+    const clearButton =
+        document.getElementById("clearPlannerButton");
+
+    const exportButton =
+        document.getElementById("exportPlannerButton");
+
+
+    if (clearButton) {
+
+        clearButton.onclick = function () {
+
+            const assignedPlayers =
+                document.querySelectorAll(
+                    ".partyPlayers .player-card"
+                ).length;
+
+            if (assignedPlayers === 0) {
+
+                alert("The planner is already empty.");
+
+                return;
+            }
+
+            const confirmed =
+                confirm(
+                    "Return all players to the Player Pool?"
+                );
+
+            if (!confirmed) {
+                return;
+            }
+
+            clearRaidPlanner();
+        };
+    }
+
+
+    if (exportButton) {
+
+        exportButton.onclick = async function () {
+
+            const planner =
+                document.querySelector(".planner");
+
+            if (!planner) {
+
+                alert("Planner was not found.");
+
+                return;
+            }
+
+            if (
+                typeof html2canvas ===
+                "undefined"
+            ) {
+
+                alert(
+                    "Image exporter did not load. Refresh the page."
+                );
+
+                return;
+            }
+
+            exportButton.disabled = true;
+
+            exportButton.textContent =
+                "Creating Image...";
+
+            try {
+
+                document
+                    .querySelectorAll(
+                        ".return-player-button"
+                    )
+                    .forEach((button) => {
+
+                        button.dataset.oldDisplay =
+                            button.style.display;
+
+                        button.style.display =
+                            "none";
+                    });
+
+                const canvas =
+                    await html2canvas(
+                        planner,
+                        {
+                            backgroundColor:
+                                "#0f1115",
+
+                            scale: 2,
+
+                            useCORS: true,
+
+                            logging: false
+                        }
+                    );
+
+                const link =
+                    document.createElement("a");
+
+                const date =
+                    new Date()
+                        .toISOString()
+                        .slice(0, 10);
+
+                link.download =
+                    `risque-raid-setup-${date}.png`;
+
+                link.href =
+                    canvas.toDataURL(
+                        "image/png"
+                    );
+
+                document.body.appendChild(
+                    link
+                );
+
+                link.click();
+
+                link.remove();
+
+            } catch (error) {
+
+                console.error(error);
+
+                alert(
+                    "Export failed. Make sure the class images are loading."
+                );
+
+            } finally {
+
+                document
+                    .querySelectorAll(
+                        ".return-player-button"
+                    )
+                    .forEach((button) => {
+
+                        button.style.display =
+                            button.dataset.oldDisplay ||
+                            "";
+                    });
+
+                exportButton.disabled = false;
+
+                exportButton.textContent =
+                    "Export Raid Setup";
+            }
+        };
+    }
+}
+
+
+if (document.readyState === "loading") {
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        setupPlannerButtons
+    );
+
+} else {
+
+    setupPlannerButtons();
+}
