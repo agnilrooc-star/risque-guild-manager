@@ -1,351 +1,665 @@
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Inter,Arial,sans-serif;
+/* =========================================
+   RISQUE GUILD MANAGER
+   COMPLETE STYLE.CSS
+========================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Inter, Arial, sans-serif;
 }
 
-body{
-    background:#0f1115;
-    color:white;
+html,
+body {
+    min-height: 100%;
 }
 
-/* HEADER */
-
-header{
-    height:75px;
-    background:#181b22;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:0 30px;
-    border-bottom:1px solid #2d313a;
+body {
+    background: #0f1115;
+    color: #ffffff;
 }
 
-.logo{
-    font-size:26px;
-    font-weight:bold;
-    color:#59ff8d;
+
+/* =========================================
+   HEADER
+========================================= */
+
+header {
+    min-height: 75px;
+    background: #181b22;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 14px 30px;
+    border-bottom: 1px solid #2d313a;
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
-nav{
-    display:flex;
-    gap:15px;
+.logo {
+    font-size: 26px;
+    font-weight: 800;
+    color: #59ff8d;
+    letter-spacing: 1px;
 }
 
-.tab{
-    background:#242832;
-    color:white;
-    border:none;
-    padding:12px 22px;
-    border-radius:10px;
-    cursor:pointer;
-    font-size:15px;
-    transition:.2s;
+nav {
+    display: flex;
+    gap: 12px;
 }
 
-.tab:hover{
-    background:#2e3440;
+.tab {
+    background: #242832;
+    color: #ffffff;
+    border: 1px solid #343a46;
+    padding: 12px 22px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: 0.2s;
 }
 
-.tab.active{
-    background:#59ff8d;
-    color:#111;
-    font-weight:bold;
+.tab:hover {
+    background: #2e3440;
+    transform: translateY(-1px);
 }
 
-/* MAIN */
-
-#plannerPage{
-    display:flex;
-    height:calc(100vh - 75px);
+.tab.active {
+    background: #59ff8d;
+    border-color: #59ff8d;
+    color: #101317;
+    font-weight: 800;
 }
 
-/* PLAYER POOL */
 
-.playerPool{
-    width:320px;
-    background:#181b22;
-    border-right:1px solid #2d313a;
-    padding:20px;
-    overflow-y:auto;
+/* =========================================
+   GL PLANNER PAGE
+========================================= */
+
+#plannerPage {
+    display: flex;
+    min-height: calc(100vh - 75px);
 }
 
-.playerPool h2{
-    margin-bottom:20px;
-    color:#59ff8d;
+
+/* =========================================
+   PLAYER POOL PANEL
+========================================= */
+
+.playerPool {
+    width: 390px;
+    flex-shrink: 0;
+    background: #181b22;
+    border-right: 1px solid #2d313a;
+    padding: 22px;
+    overflow-y: auto;
 }
 
-#playerPool{
-    display:flex;
-    flex-direction:column;
-    gap:10px;
+.playerPool > h2 {
+    color: #59ff8d;
+    margin-bottom: 18px;
+    font-size: 25px;
 }
 
-/* PLAYER CARD */
-
-.player-card{
-    background:#242832;
-    border-radius:10px;
-    padding:12px;
-    border:1px solid #353b47;
-    cursor:grab;
+.pool-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
 }
 
-/* RIGHT SIDE */
-
-.planner{
-    flex:1;
-    padding:25px;
-    overflow-y:auto;
+.pool-title {
+    font-size: 19px;
+    font-weight: 800;
 }
 
-/* RAID BOX */
-
-.raid{
-    background:#181b22;
-    border-radius:14px;
-    padding:20px;
-    margin-bottom:25px;
-    border:1px solid #2f3541;
+#playerCount {
+    background: #232933;
+    color: #59ff8d;
+    border: 1px solid #343b47;
+    border-radius: 20px;
+    padding: 6px 11px;
+    font-size: 13px;
+    font-weight: 700;
 }
 
-.raid h2{
-    color:#59ff8d;
-    margin-bottom:20px;
+#playerPool {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 13px;
+    align-items: start;
 }
 
-/* PARTY GRID */
 
-.party-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-    gap:15px;
+/* =========================================
+   STANDARD PLAYER CARD
+   Used in Player Pool
+========================================= */
+
+.player-card {
+    width: 100%;
+    min-width: 0;
+    min-height: 205px;
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.035),
+            rgba(255, 255, 255, 0)
+        ),
+        #20242c;
+    border: 3px solid #555b66;
+    border-radius: 16px;
+    padding: 14px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: 7px;
+    position: relative;
+    cursor: grab;
+    user-select: none;
+    overflow: hidden;
+    transition:
+        transform 0.2s,
+        box-shadow 0.2s,
+        background 0.2s;
 }
 
-/* PARTY */
-
-.party{
-    background:#242832;
-    border-radius:12px;
-    min-height:300px;
-    padding:15px;
+.player-card:hover {
+    transform: translateY(-4px);
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.06),
+            rgba(255, 255, 255, 0)
+        ),
+        #252a33;
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.28);
 }
 
-.party h3{
-    text-align:center;
-    margin-bottom:15px;
-    color:#ddd;
+.player-card:active {
+    cursor: grabbing;
 }
 
-/* SECOND ROW */
-
-.bottomRaids{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:20px;
+.player-icon {
+    width: 68px;
+    height: 68px;
+    object-fit: contain;
+    display: block;
+    filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.28));
 }
 
-/* ROSTER PAGE */
-
-#rosterPage{
-    padding:30px;
+.player-name {
+    width: 100%;
+    font-size: 16px;
+    line-height: 1.2;
+    font-weight: 800;
+    color: #ffffff;
+    text-align: center;
+    word-break: break-word;
 }
 
-/* MOBILE */
-
-@media(max-width:1100px){
-
-#plannerPage{
-    flex-direction:column;
+.player-class {
+    color: #9ca6b4;
+    font-size: 13px;
+    text-align: center;
 }
 
-.playerPool{
-    width:100%;
-    height:300px;
+.player-role {
+    color: #c6ced9;
+    font-size: 13px;
+    text-align: center;
 }
 
-.bottomRaids{
-    grid-template-columns:1fr;
+.player-gs {
+    background: #2e3440;
+    border: 1px solid #3d4553;
+    color: #f7d66c;
+    padding: 6px 11px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
 }
 
+.elite {
+    position: absolute;
+    top: 8px;
+    right: 9px;
+    font-size: 18px;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6));
 }
 
-/*=========================
-PLAYER CARD
-=========================*/
 
-.player-card{
+/* =========================================
+   CLASS COLORS
+========================================= */
 
-    width:170px;
-    height:200px;
-
-    background:#20242c;
-
-    border-radius:16px;
-
-    border:3px solid #555;
-
-    display:flex;
-
-    flex-direction:column;
-
-    align-items:center;
-
-    justify-content:space-between;
-
-    padding:14px;
-
-    cursor:grab;
-
-    transition:.25s;
-
-    position:relative;
-
+.knight {
+    border-color: #cf4444;
+    box-shadow: inset 0 0 22px rgba(207, 68, 68, 0.08);
 }
 
-.player-card:hover{
-
-    transform:translateY(-5px);
-
-    box-shadow:0 0 18px rgba(0,0,0,.35);
-
+.priest {
+    border-color: #f3f3df;
+    box-shadow: inset 0 0 22px rgba(243, 243, 223, 0.08);
 }
 
-.player-icon{
-
-    width:70px;
-
-    height:70px;
-
-    object-fit:contain;
-
+.hunter {
+    border-color: #6dd36d;
+    box-shadow: inset 0 0 22px rgba(109, 211, 109, 0.08);
 }
 
-.player-name{
-
-    font-size:18px;
-
-    font-weight:bold;
-
-    text-align:center;
-
+.wizard {
+    border-color: #4db6ff;
+    box-shadow: inset 0 0 22px rgba(77, 182, 255, 0.08);
 }
 
-.player-role{
-
-    color:#b9c2d0;
-
-    font-size:14px;
-
+.blacksmith {
+    border-color: #ffad42;
+    box-shadow: inset 0 0 22px rgba(255, 173, 66, 0.08);
 }
 
-.player-gs{
-
-    background:#2e3440;
-
-    padding:5px 12px;
-
-    border-radius:20px;
-
-    font-size:13px;
-
-    font-weight:bold;
-
+.gs {
+    border-color: #b56dff;
+    box-shadow: inset 0 0 22px rgba(181, 109, 255, 0.08);
 }
 
-.elite{
-
-    position:absolute;
-
-    top:10px;
-
-    right:10px;
-
-    font-size:20px;
-
+.druid {
+    border-color: #48d17a;
+    box-shadow: inset 0 0 22px rgba(72, 209, 122, 0.08);
 }
 
-#playerPool{
-
-    display:flex;
-
-    flex-wrap:wrap;
-
-    gap:15px;
-
+.assassin {
+    border-color: #8b5cf6;
+    box-shadow: inset 0 0 22px rgba(139, 92, 246, 0.08);
 }
 
-.pool-header{
 
-    display:flex;
+/* =========================================
+   PLANNER RIGHT SIDE
+========================================= */
 
-    justify-content:space-between;
-
-    align-items:center;
-
-    margin-bottom:18px;
-
+.planner {
+    flex: 1;
+    min-width: 0;
+    padding: 25px;
+    overflow-y: auto;
 }
 
-.pool-title{
-
-    font-size:22px;
-
-    font-weight:bold;
-
+.raid {
+    background: #181b22;
+    border: 1px solid #2f3541;
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
 }
 
-#playerCount{
-
-    color:#59ff8d;
-
+.raid h2 {
+    color: #59ff8d;
+    margin-bottom: 18px;
+    font-size: 22px;
 }
 
-.knight{
-
-    border-color:#cf4444;
-
+.party-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(220px, 1fr));
+    gap: 15px;
 }
 
-.priest{
-
-    border-color:#f5f5f5;
-
+.party {
+    min-width: 0;
+    min-height: 320px;
+    background: #242832;
+    border: 1px solid #353b47;
+    border-radius: 12px;
+    padding: 14px;
+    transition: 0.2s;
 }
 
-.hunter{
-
-    border-color:#6dd36d;
-
+.party:hover {
+    border-color: #4a5362;
 }
 
-.wizard{
-
-    border-color:#4db6ff;
-
+.party h3 {
+    text-align: center;
+    margin-bottom: 14px;
+    color: #e3e7ed;
+    font-size: 16px;
 }
 
-.blacksmith{
-
-    border-color:#ffad42;
-
+.partyPlayers {
+    min-height: 250px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border: 1px dashed #414957;
+    border-radius: 9px;
+    padding: 9px;
 }
 
-.gs{
-
-    border-color:#b56dff;
-
+.partyPlayers:empty::after {
+    content: "Drop players here";
+    color: #697383;
+    font-size: 12px;
+    text-align: center;
+    margin: auto;
 }
 
-.druid{
-
-    border-color:#48d17a;
-
+.bottomRaids {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
 }
 
-.assassin{
+.bottomRaids .party-grid {
+    grid-template-columns: 1fr;
+}
 
-    border-color:#8b5cf6;
 
+/* Smaller cards when moved into a party */
+
+.partyPlayers .player-card {
+    min-height: 88px;
+    height: auto;
+    padding: 9px 10px;
+    border-width: 2px;
+    border-radius: 10px;
+    display: grid;
+    grid-template-columns: 44px 1fr auto;
+    grid-template-rows: auto auto;
+    column-gap: 9px;
+    row-gap: 2px;
+    align-items: center;
+}
+
+.partyPlayers .player-icon {
+    width: 42px;
+    height: 42px;
+    grid-row: 1 / 3;
+}
+
+.partyPlayers .player-name {
+    text-align: left;
+    font-size: 14px;
+}
+
+.partyPlayers .player-role {
+    text-align: left;
+    font-size: 11px;
+}
+
+.partyPlayers .player-gs {
+    grid-column: 3;
+    grid-row: 1 / 3;
+    font-size: 10px;
+    padding: 4px 7px;
+}
+
+.partyPlayers .elite {
+    display: none;
+}
+
+
+/* =========================================
+   GUILD ROSTER PAGE
+========================================= */
+
+#rosterPage {
+    min-height: calc(100vh - 75px);
+    padding: 28px;
+    overflow-y: auto;
+    background: #0f1115;
+}
+
+#rosterPage h2 {
+    color: #59ff8d;
+    font-size: 27px;
+    margin-bottom: 22px;
+}
+
+#rosterTable {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(285px, 1fr));
+    gap: 18px;
+    align-items: stretch;
+}
+
+
+/* Horizontal Guild Roster cards */
+
+#rosterTable .player-card {
+    width: 100%;
+    min-height: 130px;
+    height: auto;
+    padding: 16px;
+    display: grid;
+    grid-template-columns: 70px 1fr;
+    grid-template-rows: auto;
+    gap: 14px;
+    align-items: center;
+    cursor: default;
+}
+
+#rosterTable .player-card:hover {
+    transform: translateY(-2px);
+}
+
+#rosterTable .player-icon {
+    width: 64px;
+    height: 64px;
+}
+
+#rosterTable .player-info {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+#rosterTable .player-name {
+    text-align: left;
+    font-size: 18px;
+}
+
+#rosterTable .player-class {
+    text-align: left;
+}
+
+#rosterTable .player-role {
+    text-align: left;
+}
+
+#rosterTable .player-gs {
+    margin-top: 4px;
+}
+
+#rosterTable .elite {
+    top: 10px;
+    right: 11px;
+}
+
+
+/* =========================================
+   SORTABLE DRAG STATES
+========================================= */
+
+.sortable-ghost {
+    opacity: 0.3;
+}
+
+.sortable-chosen {
+    transform: scale(1.02);
+}
+
+.sortable-drag {
+    opacity: 0.95;
+}
+
+
+/* =========================================
+   SCROLLBAR
+========================================= */
+
+::-webkit-scrollbar {
+    width: 9px;
+    height: 9px;
+}
+
+::-webkit-scrollbar-track {
+    background: #14171c;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #3a414d;
+    border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #505967;
+}
+
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width: 1250px) {
+    .playerPool {
+        width: 330px;
+    }
+
+    #playerPool {
+        grid-template-columns: 1fr;
+    }
+
+    .party-grid {
+        grid-template-columns: repeat(2, minmax(220px, 1fr));
+    }
+
+    .bottomRaids {
+        grid-template-columns: 1fr;
+    }
+
+    .bottomRaids .party-grid {
+        grid-template-columns: repeat(2, minmax(220px, 1fr));
+    }
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 800px) {
+    header {
+        position: relative;
+        min-height: auto;
+        flex-direction: column;
+        align-items: stretch;
+        padding: 16px;
+    }
+
+    .logo {
+        text-align: center;
+        font-size: 21px;
+    }
+
+    nav {
+        width: 100%;
+    }
+
+    .tab {
+        flex: 1;
+        padding: 11px 8px;
+        font-size: 13px;
+    }
+
+    #plannerPage {
+        min-height: auto;
+        flex-direction: column;
+    }
+
+    .playerPool {
+        width: 100%;
+        max-height: none;
+        border-right: none;
+        border-bottom: 1px solid #2d313a;
+    }
+
+    #playerPool {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .planner {
+        width: 100%;
+        padding: 15px;
+    }
+
+    .raid {
+        padding: 14px;
+    }
+
+    .party-grid,
+    .bottomRaids .party-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .bottomRaids {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .party {
+        min-height: 260px;
+    }
+
+    .partyPlayers {
+        min-height: 195px;
+    }
+
+    #rosterPage {
+        padding: 18px 14px;
+    }
+
+    #rosterTable {
+        grid-template-columns: 1fr;
+        gap: 13px;
+    }
+}
+
+
+/* =========================================
+   SMALL MOBILE
+========================================= */
+
+@media (max-width: 470px) {
+    #playerPool {
+        grid-template-columns: 1fr;
+    }
+
+    .player-card {
+        min-height: 185px;
+    }
+
+    .pool-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    #rosterTable .player-card {
+        grid-template-columns: 58px 1fr;
+        padding: 13px;
+    }
+
+    #rosterTable .player-icon {
+        width: 54px;
+        height: 54px;
+    }
 }
