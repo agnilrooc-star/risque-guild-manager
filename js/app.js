@@ -60,4 +60,4 @@ function renderPlayerPool(){
     });
 
 }
-}
+
