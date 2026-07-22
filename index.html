@@ -1,117 +1,284 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>Risque Guild Manager</title>
-
-    <link
-        rel="stylesheet"
-        href="style.css?v=4"
-    >
-</head>
-
-<body>
-
-    <header>
-
-        <div class="logo">
-            RISQUE GUILD MANAGER
-        </div>
-
-        <nav>
-
-            <button
-                class="tab active"
-                id="plannerTab"
-                type="button"
-            >
-                Guild League Planner
-            </button>
-
-            <button
-                class="tab"
-                id="rosterTab"
-                type="button"
-            >
-                Guild Roster
-            </button>
-
-        </nav>
-
-    </header>
+// =========================================
+// RISQUE RAID PLANNER
+// Creates raid boxes and enables drag/drop
+// =========================================
 
 
-    <div id="plannerPage">
+// =========================================
+// CREATE ONE RAID SECTION
+// =========================================
 
-        <aside class="playerPool">
+function createRaidSection(containerId, raidTitle, partyCount) {
 
-            <h2>Player Pool</h2>
+    const container = document.getElementById(containerId);
 
-            <div class="pool-header">
+    if (!container) {
+        console.error(`Container not found: ${containerId}`);
+        return;
+    }
 
-                <div class="pool-title">
-                    Available Players
-                </div>
+    let partiesHTML = "";
 
-                <div id="playerCount">
-                    0 Players
-                </div>
+    for (let number = 1; number <= partyCount; number++) {
+
+        const partyId = `${containerId}Party${number}`;
+
+        partiesHTML += `
+            <div class="party">
+
+                <h3 data-party-name="Party ${number}">
+                    Party ${number} (0)
+                </h3>
+
+                <div
+                    class="partyPlayers"
+                    id="${partyId}"
+                ></div>
 
             </div>
+        `;
+    }
 
-            <div id="playerPool"></div>
+    container.innerHTML = `
+        <section class="raid">
 
-        </aside>
+            <h2>${raidTitle}</h2>
 
-
-        <main class="planner">
-
-            <div id="raidOne"></div>
-
-            <div class="bottomRaids">
-
-                <div id="raidTwo"></div>
-
-                <div id="raidThree"></div>
-
-                <div id="roaming"></div>
-
+            <div class="party-grid">
+                ${partiesHTML}
             </div>
 
-        </main>
-
-    </div>
-
-
-    <div
-        id="rosterPage"
-        style="display:none;"
-    >
-
-        <h2>Guild Roster</h2>
-
-        <div id="rosterTable"></div>
-
-    </div>
+        </section>
+    `;
+}
 
 
-    <!-- SortableJS loads only once -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+// =========================================
+// CREATE ALL RAID BOXES
+// =========================================
 
-    <!-- Project scripts -->
-    <script src="js/planner.js?v=4"></script>
-    <script src="js/roster.js?v=4"></script>
-    <script src="js/tabs.js?v=4"></script>
-    <script src="js/app.js?v=4"></script>
-    <script src="js/google.js?v=4"></script>
+function createAllRaidBoxes() {
 
-</body>
+    // Raid 1 has 6 parties
+    createRaidSection(
+        "raidOne",
+        "Raid 1",
+        6
+    );
 
-</html>
+    // Raid 2 has 2 parties
+    createRaidSection(
+        "raidTwo",
+        "Raid 2",
+        2
+    );
+
+    // Raid 3 has 2 parties
+    createRaidSection(
+        "raidThree",
+        "Raid 3",
+        2
+    );
+
+    // Roaming has 2 parties
+    createRaidSection(
+        "roaming",
+        "Roaming",
+        2
+    );
+}
+
+
+// =========================================
+// UPDATE PARTY COUNTS
+// =========================================
+
+function updatePlannerCounts() {
+
+    document.querySelectorAll(".party").forEach((party) => {
+
+        const title = party.querySelector("h3");
+        const playerArea = party.querySelector(".partyPlayers");
+
+        if (!title || !playerArea) {
+            return;
+        }
+
+        const partyName =
+            title.dataset.partyName || "Party";
+
+        const playerCount =
+            playerArea.querySelectorAll(".player-card").length;
+
+        title.textContent =
+            `${partyName} (${playerCount})`;
+    });
+
+    const playerPool =
+        document.getElementById("playerPool");
+
+    const playerCountElement =
+        document.getElementById("playerCount");
+
+    if (playerPool && playerCountElement) {
+
+        const availablePlayers =
+            playerPool.querySelectorAll(".player-card").length;
+
+        playerCountElement.textContent =
+            `${availablePlayers} Players`;
+    }
+}
+
+
+// =========================================
+// SAVE RAID PLANNER
+// =========================================
+
+function savePlannerLayout() {
+
+    const savedPlanner = {};
+
+    document.querySelectorAll(".partyPlayers").forEach((partyArea) => {
+
+        savedPlanner[partyArea.id] = [];
+
+        partyArea
+            .querySelectorAll(".player-card")
+            .forEach((card) => {
+
+                const playerName =
+                    card.dataset.ign ||
+                    card.querySelector(".player-name")
+                        ?.textContent
+                        .trim();
+
+                if (playerName) {
+                    savedPlanner[partyArea.id].push(playerName);
+                }
+            });
+    });
+
+    localStorage.setItem(
+        "risqueRaidPlanner",
+        JSON.stringify(savedPlanner)
+    );
+}
+
+
+// =========================================
+// ENABLE DRAG AND DROP
+// =========================================
+
+function initializeDragAndDrop() {
+
+    if (typeof Sortable === "undefined") {
+
+        console.error("SortableJS did not load.");
+
+        return;
+    }
+
+    const playerPool =
+        document.getElementById("playerPool");
+
+    if (!playerPool) {
+
+        console.error("Player Pool was not found.");
+
+        return;
+    }
+
+    // Prevent duplicate Sortable initialization
+    if (!playerPool.dataset.sortableReady) {
+
+        new Sortable(playerPool, {
+
+            group: {
+                name: "guildPlayers",
+                pull: true,
+                put: true
+            },
+
+            animation: 180,
+
+            ghostClass: "sortable-ghost",
+
+            chosenClass: "sortable-chosen",
+
+            dragClass: "sortable-drag",
+
+            onEnd: function () {
+
+                updatePlannerCounts();
+
+                savePlannerLayout();
+            }
+        });
+
+        playerPool.dataset.sortableReady = "true";
+    }
+
+
+    document
+        .querySelectorAll(".partyPlayers")
+        .forEach((partyArea) => {
+
+            if (partyArea.dataset.sortableReady) {
+                return;
+            }
+
+            new Sortable(partyArea, {
+
+                group: {
+                    name: "guildPlayers",
+                    pull: true,
+                    put: true
+                },
+
+                animation: 180,
+
+                ghostClass: "sortable-ghost",
+
+                chosenClass: "sortable-chosen",
+
+                dragClass: "sortable-drag",
+
+                onEnd: function () {
+
+                    updatePlannerCounts();
+
+                    savePlannerLayout();
+                }
+            });
+
+            partyArea.dataset.sortableReady = "true";
+        });
+}
+
+
+// =========================================
+// START RAID PLANNER
+// =========================================
+
+function startRaidPlanner() {
+
+    createAllRaidBoxes();
+
+    initializeDragAndDrop();
+
+    updatePlannerCounts();
+}
+
+
+if (document.readyState === "loading") {
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        startRaidPlanner
+    );
+
+} else {
+
+    startRaidPlanner();
+}
