@@ -114,7 +114,25 @@
 
 
         <main class="planner">
+<div class="planner-actions">
 
+    <button
+        id="clearPlannerButton"
+        class="planner-button clear-button"
+        type="button"
+    >
+        Clear Planner
+    </button>
+
+    <button
+        id="exportPlannerButton"
+        class="planner-button export-button"
+        type="button"
+    >
+        Export Raid Setup
+    </button>
+
+</div>
             <div id="raidOne"></div>
 
             <div class="bottomRaids">
@@ -146,6 +164,7 @@
 
     <!-- SortableJS loads only once -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
     <!-- Project scripts -->
     <script src="js/planner.js?v=13"></script>
