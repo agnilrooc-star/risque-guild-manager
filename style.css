@@ -704,3 +704,39 @@ nav {
     border-color: #f87171;
     transform: scale(1.08);
 }
+/* =========================================
+   PLAYER POOL CLASS FILTER
+========================================= */
+
+.pool-filters {
+    margin-bottom: 16px;
+}
+
+#classFilter {
+    width: 100%;
+    padding: 11px 13px;
+
+    background: #242832;
+    color: #ffffff;
+
+    border: 1px solid #3b4350;
+    border-radius: 9px;
+
+    font-size: 14px;
+    cursor: pointer;
+    outline: none;
+}
+
+#classFilter:hover {
+    border-color: #59ff8d;
+}
+
+#classFilter:focus {
+    border-color: #59ff8d;
+    box-shadow: 0 0 0 3px rgba(89, 255, 141, 0.12);
+}
+
+#classFilter option {
+    background: #242832;
+    color: #ffffff;
+}
