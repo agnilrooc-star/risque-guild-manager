@@ -1,19 +1,60 @@
+function getClassImage(playerClass){
+
+    return `assets/classes/${playerClass.toLowerCase()}.png`;
+
+}
+
 function renderRoster(){
 
-    const table=document.getElementById("rosterTable");
+    const table = document.getElementById("rosterTable");
 
-    table.innerHTML="";
+    table.innerHTML = "";
+
+    if(guildMembers.length === 0){
+
+        table.innerHTML = "<p>No guild members found.</p>";
+
+        return;
+
+    }
 
     guildMembers.forEach(player=>{
 
-        table.innerHTML += `
-        <div class="player-card">
-            <strong>${player.ign}</strong><br>
-            ${player.class}<br>
-            ${player.role}<br>
-            Gear: ${player.gear}
-        </div>
+        const card = document.createElement("div");
+
+        card.className = `player-card ${player.class.toLowerCase()}`;
+
+        card.innerHTML = `
+
+            ${player.elite ? '<div class="elite">⭐</div>' : ''}
+
+            <img
+                class="player-icon"
+                src="${getClassImage(player.class)}"
+                alt="${player.class}"
+            >
+
+            <div class="player-name">
+
+                ${player.ign}
+
+            </div>
+
+            <div class="player-role">
+
+                ${player.role}
+
+            </div>
+
+            <div class="player-gs">
+
+                🏆 ${player.gear}
+
+            </div>
+
         `;
+
+        table.appendChild(card);
 
     });
 
