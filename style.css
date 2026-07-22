@@ -831,3 +831,7 @@ nav {
         font-size: 12px;
     }
 }
+.exporting-planner .planner-actions,
+.exporting-planner .return-player-button {
+    display: none !important;
+}
